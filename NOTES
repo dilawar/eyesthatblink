@@ -1,0 +1,10 @@
+One macosx, `-intl` not found can be solved by the following.
+
+    https://stackoverflow.com/questions/11370684/what-is-libintl-h-and-where-can-i-get-it
+    
+# OpenSUSE 
+
+    - Install libwebp-devel
+
+# Ubuntu 
+   - Install libwebp-dev

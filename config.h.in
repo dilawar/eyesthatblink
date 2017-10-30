@@ -1,0 +1,13 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// Log file path.
+#define LOG_FILE_PATH           "@LOG_FILE_PATH@"
+#define AVG_BLINK_DURATION      @AVERAGE_BLINK_DURATION@
+#define ICONFILE_PATH           "@ICONFILE_INSTALL_PATH@"
+#define CASCADE_INSTALL_DIR     "@CASCADE_INSTALL_DIR@"
+#define DATA_FILE_PATH          "@DATA_FILE_PATH@"
+#define CONFIG_FILE_PATH        "@CONFIG_FILE_PATH@"
+#define VERSION                 "@PROJECT_VERSION@"
+
+#endif /* end of include guard: CONFIG_H */
