@@ -150,11 +150,19 @@ void ETBApplication::create_window()
     if( config_manager_.getValue<bool>( "global.user_has_small_eyes" ) == true )
         smallEye.set_active( );
 
+    showUserFace.set_label( "Show my face" );
+    showUserFace.set_active( config_manager_.getValue<bool>( "global.show_user_face" ) );
+    showUserFace.signal_toggled( ).connect( 
+            sigc::mem_fun( *this, &ETBApplication::toggleShowUserFace )
+            );
+    showUserFace.show( );
+    table.attach( showUserFace, 0, 1, 0, 1 );
+
     smallEye.signal_toggled( ).connect( 
             sigc::mem_fun( *this, &ETBApplication::toggleSmallEyeOption )
             );
     smallEye.show( );
-    table.attach( smallEye, 0, 1, 0, 1 );
+    table.attach( smallEye, 0, 1, 1, 2 );
 
     // Glasses.
     glasses.set_label( "Wearing glasses? " );
@@ -166,7 +174,7 @@ void ETBApplication::create_window()
             sigc::mem_fun( *this, &ETBApplication::toggleEyeGlassOption )
             );
     glasses.show( );
-    table.attach( glasses, 0, 1, 1, 2 );
+    table.attach( glasses, 0, 1, 2, 3);
 
     label.set_label( "Blinks per min" );
     label.show( );
@@ -180,10 +188,10 @@ void ETBApplication::create_window()
             );
     thresBox.pack_start( threshold );
     threshold.show( );
-    table.attach( thresBox, 0, 1, 2, 3 );
+    table.attach( thresBox, 0, 1, 3, 4);
     thresBox.show( );
 
-    table.attach( image, 0, 1, 3, 7);
+    table.attach( image, 0, 1, 4, 7);
     image.show( );
 
 #if WITH_GTK3
@@ -203,7 +211,15 @@ void ETBApplication::create_window()
 
 void ETBApplication::on_window_hide(Gtk::Window* window)
 {
+    LOG_DEBUG << "Hiding window";
     delete window;
+    close_camera( );
+
+#ifdef WITH_GTK3
+    quit( );
+#elif WITH_GTK2
+    Gtk::Main::quit( );
+#endif
 }
 
 void ETBApplication::on_activate()
@@ -219,9 +235,9 @@ void ETBApplication::on_activate()
 void ETBApplication::on_action_quit()
 {
     
-    close_camera( );
+    LOG_DEBUG << "Closing application";
 
-    std::cout << G_STRFUNC << std::endl;
+    close_camera( );
 
 #ifdef WITH_GTK3
     quit(); // Not really necessary, when Gtk::Widget::hide() is called.
@@ -266,6 +282,10 @@ bool ETBApplication::show_user_face( const cv::Mat& gray )
         cv::cvtColor( gray, face, cv::COLOR_GRAY2BGR);
     else
         face = gray;
+
+    double width = face.cols;
+    double fixedWidth = 150;
+    cv::resize( face, face, cv::Size( fixedWidth, face.rows * fixedWidth / width ) );
 
     auto pixbuf = Gdk::Pixbuf::create_from_data( face.data
             , Gdk::COLORSPACE_RGB, false
