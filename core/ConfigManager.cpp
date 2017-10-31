@@ -163,6 +163,5 @@ const string ConfigManager::getCascadeFile( const string& cascadeName )
         LOG_ERROR << "Could not find cascade " << cascadeName << endl;
 
     throw runtime_error( "Cascade file " + cascadeName + " not found" );
-
 }
 

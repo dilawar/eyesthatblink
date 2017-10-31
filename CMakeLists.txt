@@ -238,7 +238,7 @@ endif( )
 
 add_custom_target( run 
     DEPENDS eyesthatblink 
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/eyesthatblink
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/eyesthatblink
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     VERBATIM
     )

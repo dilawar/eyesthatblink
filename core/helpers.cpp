@@ -63,7 +63,7 @@ double computeDynamicThreshold(const cv::Mat &mat, double stdDevFactor)
  *
  * @param milliseconds
  */
-void sleep( size_t x )
+void _sleep( size_t x )
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(x));
 }
