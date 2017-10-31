@@ -1,9 +1,7 @@
 [Desktop Entry]
 Name=Eyes That Blink
-GenericName=eyesthatblink
+GenericName=EyesThatBlink
 Exec=eyesthatblink
 Icon=EyesThatBlink
 Type=Application
-Category=Utility;Accessibility;
 Categories=Utility;Accessibility;
-X-GNOME-Autostart-Notify=false
