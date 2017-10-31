@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
-
 cmake_policy(SET CMP0048 NEW)
-
 project( EyesThatBlink VERSION 1.0.0)
 add_definitions( --std=c++11 )
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 # Enable/disable debug.
 set(WITH_DEBUG ON)
 if(WITH_DEBUG)
@@ -24,75 +23,75 @@ else( )
     include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/external/libexecstream )
 endif( )
 
-find_package(OpenCV)
+find_package(OpenCV REQUIRED)
 if(OpenCV_FOUND)
     set(WITH_LOCAL_OPENCV OFF)
 else( )
 set( WITH_LOCAL_OPENCV ON )
 endif( )
 
-if(WITH_LOCAL_OPENCV)
-    add_definitions( -DOPENCV3 )
-    set( OPENCV_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/opencv-3.3.0 )
-    set( OPENCV_INSTALL_DIR ${CMAKE_BINARY_DIR}/_opencv )
-    set( OPENCV_BUILD_DIR ${CMAKE_BINARY_DIR}/_build_opencv )
-    file(MAKE_DIRECTORY ${OPENCV_BUILD_DIR})
-
-    set( OpenCV_LIBRARIES 
-        ${OPENCV_INSTALL_DIR}/lib/libopencv_calib3d.a
-        ${OPENCV_INSTALL_DIR}/lib/libopencv_features2d.a
-        # ${OPENCV_INSTALL_DIR}/lib/libopencv_flann.a
-        # ${OPENCV_INSTALL_DIR}/lib/libopencv_highgui.a
-        # ${OPENCV_INSTALL_DIR}/lib/libopencv_ml.a
-        ${OPENCV_INSTALL_DIR}/lib/libopencv_objdetect.a
-        # ${OPENCV_INSTALL_DIR}/lib/libopencv_photo.a
-        # ${OPENCV_INSTALL_DIR}/lib/libopencv_stitching.a
-        # ${OPENCV_INSTALL_DIR}/lib/libopencv_superres.a
-        # ${OPENCV_INSTALL_DIR}/lib/libopencv_video.a
-        # ${OPENCV_INSTALL_DIR}/lib/libopencv_videostab.a
-        ${OPENCV_INSTALL_DIR}/lib/libopencv_imgcodecs.a
-        ${OPENCV_INSTALL_DIR}/lib/libopencv_videoio.a
-        ${OPENCV_INSTALL_DIR}/lib/libopencv_imgproc.a
-        ${OPENCV_INSTALL_DIR}/lib/libopencv_core.a
-        )
-    add_custom_target(opencv_local DEPENDS ${OpenCV_LIBRARIES} )
-    add_custom_command( OUTPUT ${OpenCV_LIBRARIES}
-        COMMAND ${CMAKE_COMMAND} 
-                -DCMAKE_BUILD_TYPE=Release
-                -DBUILD_SHARED_LIBS=OFF 
-                -DCMAKE_INSTALL_PREFIX=${OPENCV_INSTALL_DIR} 
-                -DBUILD_DOCS=OFF 
-                -DBUILD_TESTS=OFF 
-                -DWITH_TIFF=OFF
-                -DWITH_ITT=OFF
-                -DWITH_IPP=OFF
-                -DWITH_JPEG=OFF
-                -DWITH_QT=OFF
-                if(UNIX AND NOT APPPLE)
-                    -DWITH_GTK=ON
-                endif( )
-                -DWITH_EIGEN=OFF
-                -DWITH_FFMPEG=OFF
-                -DWITH_GSTREAMER=OFF
-                -DWITH_OPENEXR=OFF
-                -DWITH_JPEG=OFF
-                -DWITH_JASPER=OFF
-                -DWITH_CUDA=OFF
-                -DSKIP_BUILD_RPATH=TRUE
-                -DBUILD_opencv_python=OFF 
-                -DBUILD_opencv_python2=OFF 
-                -DBUILD_opencv_python3=OFF 
-            ${OPENCV_SOURCE_DIR}
-        COMMAND $(MAKE) 
-        COMMAND $(MAKE) install
-        WORKING_DIRECTORY ${OPENCV_BUILD_DIR}
-        COMMENT "Build opencv locally"
-        VERBATIM
-        ) 
-    set(OpenCV_INCLUDE_DIRS ${OPENCV_INSTALL_DIR}/include )
-    FILE( GLOB OPENCV_EXTRA_LIBS "${OPENCV_INSTALL_DIR}/share/OpenCV/3rdparty/lib/*.a" )
-    set( OpenCV_LIBRARIES ${OPENCV_EXTRA_LIBS} ${OpenCV_LIBRARIES} )
-endif( )
+## if(WITH_LOCAL_OPENCV)
+##     add_definitions( -DOPENCV3 )
+##     set( OPENCV_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/opencv-3.3.0 )
+##     set( OPENCV_INSTALL_DIR ${CMAKE_BINARY_DIR}/_opencv )
+##     set( OPENCV_BUILD_DIR ${CMAKE_BINARY_DIR}/_build_opencv )
+##     file(MAKE_DIRECTORY ${OPENCV_BUILD_DIR})
+## 
+##     set( OpenCV_LIBRARIES 
+##         ${OPENCV_INSTALL_DIR}/lib/libopencv_calib3d.a
+##         ${OPENCV_INSTALL_DIR}/lib/libopencv_features2d.a
+##         # ${OPENCV_INSTALL_DIR}/lib/libopencv_flann.a
+##         # ${OPENCV_INSTALL_DIR}/lib/libopencv_highgui.a
+##         # ${OPENCV_INSTALL_DIR}/lib/libopencv_ml.a
+##         ${OPENCV_INSTALL_DIR}/lib/libopencv_objdetect.a
+##         # ${OPENCV_INSTALL_DIR}/lib/libopencv_photo.a
+##         # ${OPENCV_INSTALL_DIR}/lib/libopencv_stitching.a
+##         # ${OPENCV_INSTALL_DIR}/lib/libopencv_superres.a
+##         # ${OPENCV_INSTALL_DIR}/lib/libopencv_video.a
+##         # ${OPENCV_INSTALL_DIR}/lib/libopencv_videostab.a
+##         ${OPENCV_INSTALL_DIR}/lib/libopencv_imgcodecs.a
+##         ${OPENCV_INSTALL_DIR}/lib/libopencv_videoio.a
+##         ${OPENCV_INSTALL_DIR}/lib/libopencv_imgproc.a
+##         ${OPENCV_INSTALL_DIR}/lib/libopencv_core.a
+##         )
+##     add_custom_target(opencv_local DEPENDS ${OpenCV_LIBRARIES} )
+##     add_custom_command( OUTPUT ${OpenCV_LIBRARIES}
+##         COMMAND ${CMAKE_COMMAND} 
+##                 -DCMAKE_BUILD_TYPE=Release
+##                 -DBUILD_SHARED_LIBS=OFF 
+##                 -DCMAKE_INSTALL_PREFIX=${OPENCV_INSTALL_DIR} 
+##                 -DBUILD_DOCS=OFF 
+##                 -DBUILD_TESTS=OFF 
+##                 -DWITH_TIFF=OFF
+##                 -DWITH_ITT=OFF
+##                 -DWITH_IPP=OFF
+##                 -DWITH_JPEG=OFF
+##                 -DWITH_QT=OFF
+##                 if(UNIX AND NOT APPPLE)
+##                     -DWITH_GTK=ON
+##                 endif( )
+##                 -DWITH_EIGEN=OFF
+##                 -DWITH_FFMPEG=OFF
+##                 -DWITH_GSTREAMER=OFF
+##                 -DWITH_OPENEXR=OFF
+##                 -DWITH_JPEG=OFF
+##                 -DWITH_JASPER=OFF
+##                 -DWITH_CUDA=OFF
+##                 -DSKIP_BUILD_RPATH=TRUE
+##                 -DBUILD_opencv_python=OFF 
+##                 -DBUILD_opencv_python2=OFF 
+##                 -DBUILD_opencv_python3=OFF 
+##             ${OPENCV_SOURCE_DIR}
+##         COMMAND $(MAKE) 
+##         COMMAND $(MAKE) install
+##         WORKING_DIRECTORY ${OPENCV_BUILD_DIR}
+##         COMMENT "Build opencv locally"
+##         VERBATIM
+##         ) 
+##     set(OpenCV_INCLUDE_DIRS ${OPENCV_INSTALL_DIR}/include )
+##     FILE( GLOB OPENCV_EXTRA_LIBS "${OPENCV_INSTALL_DIR}/share/OpenCV/3rdparty/lib/*.a" )
+##     set( OpenCV_LIBRARIES ${OPENCV_EXTRA_LIBS} ${OpenCV_LIBRARIES} )
+## endif( )
 
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 message( STATUS "OpenCV libraries ${OpenCV_LIBRARIES}" )
@@ -168,9 +167,7 @@ set( AVERAGE_BLINK_DURATION 200 )   # in ms.
 
 set(ICON_FILE_48 ${CMAKE_CURRENT_SOURCE_DIR}/data/EyesThatBlink.png)
 set(DESKTOP_FILE ${CMAKE_CURRENT_SOURCE_DIR}/data/EyesThatBlink.desktop)
-set(CASCADE_DIR
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/opencv-3.3.0/data/haarcascades
-    )
+set(CASCADE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cascades)
 
 get_filename_component( ICON_FILENAME ${ICON_FILE_48} NAME )
 
