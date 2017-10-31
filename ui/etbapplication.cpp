@@ -272,5 +272,6 @@ bool ETBApplication::show_user_face( const cv::Mat& gray )
             , 8, face.cols, face.rows, face.step 
             );
     image.set( pixbuf );
+    return true;
 }
 
