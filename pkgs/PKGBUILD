@@ -1,0 +1,43 @@
+ # Maintainer: Dilawar Singh <dilawar.s.rajput@gmail.com2
+pkgname=eyesthatblink
+pkgver=1.0
+pkgrel=1
+epoch=
+pkgdesc="Eyes That Blink"
+arch=('i686' 'x86_64')
+url="https://eyesthatblink.com"
+license=('unknown')
+groups=()
+depends=( 'libnotify' 'gtkmm' 'opencv')
+makedepends=( 'cmake' 'boost' 'libnotify' 'gtkmm' 'opencv' )
+checkdepends=()
+optdepends=()
+provides=("$pkgname")
+conflicts=("$pkgname")
+replaces=()
+backup=()
+options=()
+install=
+changelog=
+source=("$pkgname::git+https://github.com/dilawar/eyesthatblink.git")
+md5sums=('SKIP')
+validpgpkeys=()
+
+prepare() {
+	cd "$srcdir/$pkgname"
+	cmake -DCMAKE_INSTALL_PREFIX=/usr .
+}
+
+build() {
+	cd "$srcdir/$pkgname"
+	make
+}
+
+check() {
+    echo "Nothing to do here"
+}
+
+package() {
+	cd "$srcdir/$pkgname"
+	make DESTDIR="$pkgdir/" install
+}
