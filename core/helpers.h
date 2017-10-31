@@ -12,7 +12,7 @@ bool inMat(cv::Point p,int rows,int cols);
 cv::Mat matrixMagnitude(const cv::Mat &matX, const cv::Mat &matY);
 double computeDynamicThreshold(const cv::Mat &mat, double stdDevFactor);
 
-void sleep( size_t milliseconds );
+void _sleep( size_t milliseconds );
 
 int diff_in_ms( time_type_ t1, time_type_ t2 );
 
