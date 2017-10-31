@@ -84,8 +84,16 @@ ActionManager::ActionManager ()
         LOG_DEBUG << "Created " << dataDir << "? " << res;
     }
 
-    modification_times_[0] = bfs::last_write_time( config_file_ );
-    modification_times_[1] = bfs::last_write_time( config_file_ );
+    if( bfs::exists( config_file_ ) )
+    {
+        modification_times_[0] = bfs::last_write_time( config_file_ );
+        modification_times_[1] = bfs::last_write_time( config_file_ );
+    }
+    else
+    {
+        modification_times_[0] = getCurrentTime( ); 
+        modification_times_[1] = getCurrentTime( );
+    }
 
 }  /* -----  end of method ActionManager::ActionManager  (constructor)  ----- */
 
