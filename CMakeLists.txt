@@ -125,7 +125,7 @@ if( WITH_LOCAL_OPENCV )
     list(APPEND OTHER_LIBS dl )
 endif( )
 
-if(UNIX AND NOT APPLE)
+if(UNIX)
 
     pkg_check_modules( LIBNOTIFY libnotify REQUIRED )
     list(APPEND OTHER_LIBS ${LIBNOTIFY_LIBRARIES})
