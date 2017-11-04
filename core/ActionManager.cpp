@@ -95,6 +95,8 @@ ActionManager::ActionManager ()
         modification_times_[1] = getCurrentTime( );
     }
 
+    LOG_INFO << "Blink threshold is " << config_manager_.getBlinkThreshold( );
+
 }  /* -----  end of method ActionManager::ActionManager  (constructor)  ----- */
 
 /*
@@ -168,7 +170,15 @@ void ActionManager::alert( const string& what )
  */
 double ActionManager::blink_activity_in_interval(const double interval_in_sec )
 {
+    // Set it true when we can find one blink which happened eaerlier than
+    // interval_in_sec time.
+    bool enoughBlinks = false;
+
     double ms = interval_in_sec * 1000.0;
+
+    if( avg_activity_.size( ) < 1 )
+        return 100000.0;
+
     auto lastE = avg_activity_.back( );
     auto firstE = avg_activity_[ 0 ];
 
@@ -179,6 +189,7 @@ double ActionManager::blink_activity_in_interval(const double interval_in_sec )
         if( diff_in_ms( lastE.first, it->first ) >= ms )
         {
             firstE = *(it);
+            enoughBlinks = true;
             break;
         }
     }
@@ -187,12 +198,8 @@ double ActionManager::blink_activity_in_interval(const double interval_in_sec )
     t2 = 1.0 * diff_in_ms( start_time_, lastE.first );
     t1 = 1.0 * diff_in_ms( start_time_, firstE.first );
 
-#if 0
-    print_time( lastE.first );
-    print_time( firstE.first );
-    cout << t2 << " " << t1 << endl;
-#endif
-    return (t2 * lastE.second - t1 * firstE.second ) / (t2 - t1 );
+    double diffT = (t2 - t1);
+    return (t2 * lastE.second - t1 * firstE.second ) / diffT; 
 }
 
 void ActionManager::insert_state( const time_type_& t, const status_t_ st )
@@ -202,9 +209,11 @@ void ActionManager::insert_state( const time_type_& t, const status_t_ st )
     static bool blink_start = false;
     static time_type_ blink_start_time;
 
+    current_time_ = std::chrono::system_clock::now( );
+
     if( st == AWAY )
     {
-        // Durating avaw time, we assume that user is blinking at normal rate.
+        // Durating away time, we assume that user is blinking at normal rate.
         blink_start = false;
         prev_status_ = st;
         auto diffT = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -213,7 +222,6 @@ void ActionManager::insert_state( const time_type_& t, const status_t_ st )
         // Normally user keeps her eyes close for 7.5% of time.
         total_blink_activity += AVG_EYELID_CLOSE_TIME * diffT ;
         last_time_stamp = t;
-        cout << '.';
         return;
     }
 
@@ -224,6 +232,10 @@ void ActionManager::insert_state( const time_type_& t, const status_t_ st )
         blink_start = true;
     }
 
+    // Analyze after every blink.
+    double runningTime = std::chrono::duration_cast
+                         < std::chrono::milliseconds > ( t - start_time_ ).count( );
+
     if( blink_start && OPEN == st )
     {
         // Get value in microseconds.
@@ -233,7 +245,7 @@ void ActionManager::insert_state( const time_type_& t, const status_t_ st )
 
         // If blink duration is less than 150 ms; then it is face. mostly due to
         // noise in acquired frame.
-        if( duration < 100.0 )
+        if( duration < 150.0 )
             return;
 
         blink_start = false;
@@ -242,9 +254,6 @@ void ActionManager::insert_state( const time_type_& t, const status_t_ st )
         // Now compute the time
         last_blink_time_ = t;
 
-        // Analyze after every blink.
-        double runningTime = std::chrono::duration_cast
-                             < std::chrono::milliseconds > ( t - start_time_ ).count( );
 
         // Store the avg activity whenever there is a blink.
         running_avg_activity_ = total_blink_activity / runningTime;
@@ -255,6 +264,9 @@ void ActionManager::insert_state( const time_type_& t, const status_t_ st )
         write_data_line( );
     }
 
+    // Analyze in every loop.
+    running_avg_activity_ = total_blink_activity / runningTime;
+    running_avg_activity_in_interval_ = blink_activity_in_interval( 600 );
 
     /*-----------------------------------------------------------------------------
      *  Trigger notification. If previous notification was less than 10 seconds
@@ -267,6 +279,8 @@ void ActionManager::insert_state( const time_type_& t, const status_t_ st )
     {
         if( diff_in_ms( t, last_nofified_on ) > 10000 )
         {
+            LOG_INFO << "Alerting user. Threshold " 
+                << config_manager_.getBlinkThreshold( );
             last_nofified_on = t;
             alert( "You are not blinking enough!" );
         }

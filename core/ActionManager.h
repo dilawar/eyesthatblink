@@ -71,6 +71,7 @@ class ActionManager
 
         // Time when app was launched.
         time_type_ start_time_;
+        time_type_ current_time_;
 
         // unsigned blink activity.
         unsigned total_blink_activity;
