@@ -21,6 +21,7 @@ using namespace std;
 #include "plog/Log.h"
 #include "../core/ConfigManager.h"
 
+namespace bfs = boost::filesystem;
 
 extern ConfigManager config_manager_;
 
@@ -274,8 +275,9 @@ void ETBApplication::on_action_print(const Glib::VariantBase& parameter)
 /* ----------------------------------------------------------------------------*/
 bool ETBApplication::show_user_face( const cv::Mat& gray )
 {
+
     if( ! show_user_face_ )
-        return false;
+        show_icon( );
 
     cv::Mat face;
     if( gray.channels( ) == 1 )
@@ -292,6 +294,16 @@ bool ETBApplication::show_user_face( const cv::Mat& gray )
             , 8, face.cols, face.rows, face.step 
             );
     image.set( pixbuf );
+    icon_is_set_ = false;
     return true;
 }
 
+bool ETBApplication::show_icon( )
+{
+    if( bfs::exists( ICONFILE_PATH ) )
+    {
+        auto pixbuf = Gdk::Pixbuf::create_from_file( ICONFILE_PATH, 150, 150 );
+        image.set( pixbuf );
+        icon_is_set_ = true;
+    }
+}

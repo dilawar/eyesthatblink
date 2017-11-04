@@ -209,6 +209,10 @@ bool process_frame(  )
                 // Show user face in UI.
                 show_user_face( face );
             }
+            else
+            {
+                show_icon( );
+            }
         }
         else
             LOG_INFO << "No face found.";

@@ -100,3 +100,9 @@ bool show_user_face( const cv::Mat& gray )
     pApp_->show_user_face( gray );
     return true;
 }
+
+bool show_icon( )
+{
+    pApp_->show_icon( );
+    return true;
+}

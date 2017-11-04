@@ -34,4 +34,8 @@ cv::Mat find_face( cv::Mat frame, int method, bool show );
 
 void update_config_file( );
 
+bool show_user_face( const cv::Mat& face );
+
+bool show_icon( );
+
 #endif /* end of include guard: MAIN_LOOP_H */

@@ -39,6 +39,8 @@ public:
     static Glib::RefPtr<ETBApplication> create();
     bool show_user_face( const cv::Mat& gray );
 
+    bool show_icon( );
+
 protected:
 
 #ifdef WITH_GTK3
@@ -86,6 +88,7 @@ private:
     bool user_has_small_eyes_;
     bool user_wearning_glasses_;
 
+    bool icon_is_set_;
 
     double user_blink_thres_;
 

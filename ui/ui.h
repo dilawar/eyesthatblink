@@ -19,6 +19,5 @@
 
 using namespace std;
 
-bool show_user_face( const cv::Mat& face );
 
 #endif /* end of include guard: UI_H */
