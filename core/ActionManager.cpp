@@ -66,6 +66,8 @@ ActionManager::ActionManager ()
     start_time_ = std::chrono::system_clock::now( );
     current_time_ = std::chrono::system_clock::now( );
 
+    blinks_.push_back( make_pair( start_time_,current_time_));
+
     // Initialize data file.
     data_file_ = bfs::path( expand_user( DATA_FILE_PATH ) );
     config_file_ = bfs::path( expand_user( CONFIG_FILE_PATH ) );
@@ -173,39 +175,23 @@ void ActionManager::alert( const string& what )
  */
 double ActionManager::blink_activity_in_interval(const double interval_in_sec )
 {
-    // Set it true when we can find one blink which happened eaerlier than
-    // interval_in_sec time.
-    bool enoughBlinks = false;
+    current_time_ = std::chrono::system_clock::now( );
+    double ms = 1000.0 * interval_in_sec;
+    double totalTime = min( 
+            1.0 * diff_in_ms( current_time_, blinks_[0].first )
+            , ms
+            );
 
-    double ms = interval_in_sec * 1000.0;
+    double totalEyeLidClosedTime = 0.0;
 
-    if( avg_activity_.size( ) < 1 )
-        return 100000.0;
-
-    auto lastE = avg_activity_.back( );
-    auto firstE = avg_activity_[ 0 ];
-
-    // Now search for first valid entry starting last - given duration. Reverse
-    // iterate.
-    for( auto it = avg_activity_.rbegin(); it != avg_activity_.rend(); ++it )
+    for( auto it = blinks_.rbegin(); it != blinks_.rend(); ++it )
     {
-        if( diff_in_ms( lastE.first, it->first ) >= ms )
-        {
-            firstE = *(it);
-            enoughBlinks = true;
+        totalEyeLidClosedTime += diff_in_ms( it->second, it->first );
+        if( diff_in_ms( current_time_, it->first) > ms )
             break;
-        }
     }
 
-    double t2, t1;
-    t2 = 1.0 * diff_in_ms( start_time_, lastE.first );
-    t1 = 1.0 * diff_in_ms( start_time_, firstE.first );
-
-    double diffT = ms;
-    if( ! enoughBlinks )
-        diffT = (t2 - t1);
-
-    return (t2 * lastE.second - t1 * firstE.second ) / diffT; 
+    return totalEyeLidClosedTime / totalTime;
 }
 
 void ActionManager::insert_state( const time_type_& t, const status_t_ st )
@@ -213,17 +199,14 @@ void ActionManager::insert_state( const time_type_& t, const status_t_ st )
 
     static time_type_ last_time_stamp = t;
     static bool blink_start = false;
-    static time_type_ blink_start_time;
-
-    current_time_ = std::chrono::system_clock::now( );
+    current_time_ = t;
 
     if( st == AWAY )
     {
         // Durating away time, we assume that user is blinking at normal rate.
         blink_start = false;
         prev_status_ = st;
-        auto diffT = std::chrono::duration_cast<std::chrono::milliseconds>(
-                         t - last_time_stamp ).count( );
+        auto diffT = diff_in_ms( t, last_time_stamp );
 
         // Normally user keeps her eyes close for 7.5% of time.
         total_blink_activity += AVG_EYELID_CLOSE_TIME * diffT ;
@@ -234,36 +217,31 @@ void ActionManager::insert_state( const time_type_& t, const status_t_ st )
     // If it is not away, lets look for blink.
     if( st == CLOSE && (! blink_start ) )
     {
-        blink_start_time = t;
+        blink_start_time_ = t;
         blink_start = true;
     }
 
     // Analyze after every blink.
-    double runningTime = std::chrono::duration_cast
-                         < std::chrono::milliseconds > ( t - start_time_ ).count( );
-
+    double runningTime = diff_in_ms(t,  start_time_ );
     if( blink_start && OPEN == st )
     {
         // Get value in microseconds.
-        double duration = std::chrono::duration_cast<std::chrono::milliseconds>(
-                              t - blink_start_time
-                          ).count( ) ;
+        double duration = diff_in_ms( t, blink_start_time_ );
 
         // If blink duration is less than 150 ms; then it is face. mostly due to
         // noise in acquired frame.
         if( duration < 150.0 )
             return;
 
+        blinks_.push_back( make_pair(blink_start_time_, t) );
         blink_start = false;
         n_blinks_ += 1;
         total_blink_activity += duration;
         // Now compute the time
         last_blink_time_ = t;
 
-
         // Store the avg activity whenever there is a blink.
         running_avg_activity_ = total_blink_activity / runningTime;
-        avg_activity_.push_back( make_pair( t, running_avg_activity_ ) );
         running_avg_activity_in_interval_ = blink_activity_in_interval( 600 );
 
         // Write data line.
@@ -280,13 +258,17 @@ void ActionManager::insert_state( const time_type_& t, const status_t_ st )
      *-----------------------------------------------------------------------------*/
     static time_type_ last_nofified_on = start_time_;
 
-    // Compare when we should alert.
+    // NO notification for first 5 seconds no matter what.
+    if( diff_in_ms( current_time_, start_time_ ) < 5000 )
+        return;
+
+    // Compare so  we can alert the user.
     if( running_avg_activity_in_interval_ < config_manager_.getBlinkThreshold( ) )
     {
         if( diff_in_ms( t, last_nofified_on ) > 10000 )
         {
             LOG_INFO << "Alerting user. Threshold " 
-                << config_manager_.getBlinkThreshold( );
+                     << config_manager_.getBlinkThreshold( );
             last_nofified_on = t;
             alert( "You are not blinking enough!" );
         }

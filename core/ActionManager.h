@@ -73,13 +73,16 @@ class ActionManager
         time_type_ start_time_;
         time_type_ current_time_;
 
+        // Blink start time and end time.
+        time_type_ blink_start_time_;
+
         // unsigned blink activity.
         unsigned total_blink_activity;
 
         time_type_ last_blink_time_;
 
-        // store average activity with duration since start of application.
-        vector< pair<time_type_, double> > avg_activity_;
+        // Save start timestamp and end timestmap of blinks.
+        vector< pair<time_type_, time_type_> > blinks_;
 
         // Note down last two write time.
         std::array<time_t, 2> modification_times_;
@@ -87,6 +90,7 @@ class ActionManager
     public:
         
         unsigned long n_blinks_;
+
         double running_avg_activity_;
         double running_avg_activity_in_interval_;
 
