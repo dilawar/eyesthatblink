@@ -1,5 +1,5 @@
 /*
- * =====================================================================================
+ * =============================================================================
  *
  *       Filename:  ActionManager.cpp
  *
@@ -13,7 +13,7 @@
  *         Author:  Dilawar Singh (), dilawars@ncbs.res.in
  *   Organization:  NCBS Bangalore
  *
- * =====================================================================================
+ * =============================================================================
  */
 
 #include "ActionManager.h"
@@ -61,8 +61,10 @@ ActionManager::ActionManager ()
 {
     n_blinks_ = 0;
     blink_rate_ = 0.0;
+
     last_blink_time_ = std::chrono::system_clock::now( );
     start_time_ = std::chrono::system_clock::now( );
+    current_time_ = std::chrono::system_clock::now( );
 
     // Initialize data file.
     data_file_ = bfs::path( expand_user( DATA_FILE_PATH ) );
@@ -151,9 +153,10 @@ void ActionManager::alert( const string& what )
     NotifyNotification * note = notify_notification_new( 
             "Alert", what.c_str(), "dialog-information" 
             );
+    notify_notification_set_timeout( note, 3000 );
     notify_notification_show( note, NULL);
-    g_object_unref( G_OBJECT(note) );
-    notify_uninit( );
+    //g_object_unref( G_OBJECT(note) );
+    //notify_uninit( );
 #endif // OS_IS_APPLE
 #endif  // OS_IS_LINUX
 
@@ -198,7 +201,10 @@ double ActionManager::blink_activity_in_interval(const double interval_in_sec )
     t2 = 1.0 * diff_in_ms( start_time_, lastE.first );
     t1 = 1.0 * diff_in_ms( start_time_, firstE.first );
 
-    double diffT = (t2 - t1);
+    double diffT = ms;
+    if( ! enoughBlinks )
+        diffT = (t2 - t1);
+
     return (t2 * lastE.second - t1 * firstE.second ) / diffT; 
 }
 
