@@ -26,8 +26,6 @@
 
 using namespace std;
 
-
-
 /**
  * @function main
  */

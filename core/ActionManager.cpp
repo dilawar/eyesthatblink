@@ -20,12 +20,12 @@
 #include "ConfigManager.h"
 
 #include <iostream>
+#include <sstream>
+
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #if USE_BOOST_PROCESS
 #include <boost/process.hpp>
-#else
-#include "exec-stream.h"
 #endif
 
 #if OS_IS_UNIX
@@ -100,6 +100,9 @@ ActionManager::ActionManager ()
     }
 
     LOG_INFO << "Blink threshold is " << config_manager_.getBlinkThreshold( );
+
+    display_ = "eDP1";
+    LOG_INFO << "Display is " << display_;
 
 }  /* -----  end of method ActionManager::ActionManager  (constructor)  ----- */
 
@@ -271,6 +274,10 @@ void ActionManager::insert_state( const time_type_& t, const status_t_ st )
                      << config_manager_.getBlinkThreshold( );
             last_nofified_on = t;
             alert( "You are not blinking enough!" );
+            stringstream cmd;
+            cmd << "xrandr --output " << display_  << " --brightness " 
+                    << max( 1.0, 10 * running_avg_activity_in_interval_ );
+            spawn( cmd.str( ) );
         }
     }
 }

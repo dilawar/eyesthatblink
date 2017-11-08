@@ -26,6 +26,8 @@
 #include <fstream>
 #include <boost/filesystem.hpp>
 
+#include "../actions/linux.h"
+
 namespace bfs = boost::filesystem;
 
 using namespace std;
@@ -100,6 +102,8 @@ class ActionManager
 
         ofstream data_file_h_;
         ofstream config_file_h_;
+
+        string display_;
 
 }; /* -----  end of class ActionManager  ----- */
 

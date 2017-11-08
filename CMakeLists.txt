@@ -18,9 +18,6 @@ set(USE_BOOST_PROCESS OFF)
 if(USE_BOOST_PROCESS)
     add_definitions( -DUSE_BOOST_PROCESS )
     include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/external/cpp-subprocess/)
-else( )
-    add_definitions( -DUSE_LIBEXECSTREAM)
-    include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/external/libexecstream )
 endif( )
 
 find_package(OpenCV REQUIRED)
@@ -126,9 +123,12 @@ if( WITH_LOCAL_OPENCV )
 endif( )
 
 if(UNIX)
-
     pkg_check_modules( LIBNOTIFY libnotify REQUIRED )
     list(APPEND OTHER_LIBS ${LIBNOTIFY_LIBRARIES})
+
+    pkg_check_modules( XRANDR xrandr REQUIRED )
+    pkg_check_modules( X11 x11 REQUIRED )
+    list(APPEND OTHER_LIBS ${XRANDR_LIBRARIES} ${X11_LIBRARIES})
 
     if(NOT WITH_LOCAL_OPENCV)
         pkg_check_modules( GTKMM gtkmm-2.4 REQUIRED )
@@ -187,14 +187,8 @@ configure_file(
     )
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/plog/include )
-
-if(NOT USE_BOOST_PROCESS)
-    add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/external/libexecstream)
-endif( )
-
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/core )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/ui )
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/actions )
 
 
 # Add target and dependencies.
@@ -206,10 +200,7 @@ if(WITH_LOCAL_OPENCV)
     add_dependencies( eyesthatblink opencv_local )
 endif()
 
-
-if(NOT USE_BOOST_PROCESS)
-    target_link_libraries( eyesthatblink core ui execstream )
-endif( )
+target_link_libraries( eyesthatblink core ui )
 
 if(GTKMM_FOUND)
     target_link_libraries( eyesthatblink ${GTKMM_LIBRARIES} )

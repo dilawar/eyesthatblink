@@ -18,6 +18,7 @@
 
 #include "../core/main_loop.h"
 #include "../core/ConfigManager.h"
+#include "../actions/linux.h"
 #include "etbapplication.h"
 
 #include "plog/Log.h"

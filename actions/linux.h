@@ -17,6 +17,6 @@
 
 #define LINUX_H
 
-void set_brightness( double fraction );
+int set_brightness( double f );
 
 #endif /* end of include guard: LINUX_H */

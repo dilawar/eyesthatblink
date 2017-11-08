@@ -18,8 +18,6 @@
 
 #if USE_BOOST_PROCESS
 #include <boost/process.hpp>
-#else
-#include "exec-stream.h"
 #endif
 
 bool rectInImage(cv::Rect rect, cv::Mat image)
@@ -135,6 +133,7 @@ int spawn( const string& command )
     namespace bp = boost::process;
 
 #ifdef OS_IS_UNIX
+    LOG_INFO << "Spawning " << command << endl;
 #ifdef OS_IS_APPLE
     bp::spawn( command );
 #else
@@ -144,16 +143,10 @@ int spawn( const string& command )
 
 #else // NOT USING BOOST SUBPROCESS
 
-    exec_stream_t es;
-    vector<string> argVec( cmdVec.begin()+1, cmdVec.end() );
-    string args = boost::algorithm::join( argVec, " " );
-
-#ifdef OS_IS_UNIX
-    es.start( cmdVec[0], args );
-#endif
-
-#endif
     LOG_INFO << "Executing " << command;
+    return std::system( command.c_str( ) );
+
+#endif
     return 0;
 }
 
