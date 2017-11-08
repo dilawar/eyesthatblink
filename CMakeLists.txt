@@ -194,7 +194,7 @@ endif( )
 
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/core )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/ui )
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/action )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/actions )
 
 
 # Add target and dependencies.
