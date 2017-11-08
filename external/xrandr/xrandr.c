@@ -25,26 +25,6 @@
  * and part of the server code for randr.
  */
 
-/***
- *       Filename:  linux.cpp
- *
- *    Description:  Function on linux.
- *
- *        Version:  0.0.1
- *        Created:  2017-11-08
- *       Revision:  none
- *
- *         Author:  Dilawar Singh <dilawars@ncbs.res.in>
- *   Organization:  NCBS Bangalore
- *
- *        License:  GNU GPL2
- */
-
-
-#define VERSION "1.0"
-
-#include "linux.h"
-
 #include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Xlibint.h>
@@ -59,6 +39,8 @@
 #include <inttypes.h>
 #include <stdarg.h>
 #include <math.h>
+
+#include "config.h"
 
 static char	*program_name;
 static Display	*dpy;
@@ -571,28 +553,28 @@ init_name (name_t *name)
 static void
 set_name_string (name_t *name, char *string)
 {
-    //name->kind |= name_string;
+    name->kind |= name_string;
     name->string = string;
 }
 
 static void
 set_name_xid (name_t *name, XID xid)
 {
-    //name->kind |= name_xid;
+    name->kind |= name_xid;
     name->xid = xid;
 }
 
 static void
 set_name_index (name_t *name, int index)
 {
-    //name->kind |= name_index;
+    name->kind |= name_index;
     name->index = index;
 }
 
 static void
 set_name_preferred (name_t *name)
 {
-    //name->kind |= name_preferred;
+    name->kind |= name_preferred;
 }
 
 static void
@@ -604,7 +586,7 @@ set_name_all (name_t *name, name_t *old)
 	name->string = old->string;
     if (old->kind & name_index)
 	name->index = old->index;
-    //name->kind |= old->kind;
+    name->kind |= old->kind;
 }
 
 static void
@@ -647,7 +629,8 @@ set_transform (transform_t  *dest,
     /* note: this string is leaked */
     dest->filter = strdup (filter);
     dest->nparams = nparams;
-    dest->params = new XFixed;
+    dest->params = malloc (nparams * sizeof (XFixed));
+    memcpy (dest->params, params, nparams * sizeof (XFixed));
 }
 
 static void
@@ -674,7 +657,7 @@ equal_transform (transform_t *a, transform_t *b)
 static output_t *
 add_output (void)
 {
-    output_t *output = new output_t( );
+    output_t *output = calloc (1, sizeof (output_t));
 
     if (!output)
 	fatal ("out of memory\n");
@@ -693,8 +676,7 @@ find_output (name_t *name)
 
     for (output = outputs; output; output = output->next)
     {
-	name_kind_t common = name_kind_t( name->kind 
-                &  output->output.kind );
+	name_kind_t common = name->kind & output->output.kind;
 	
 	if ((common & name_xid) && name->xid == output->output.xid)
 	    break;
@@ -737,7 +719,7 @@ find_crtc (name_t *name)
 	name_kind_t common;
 	
 	crtc = &crtcs[c];
-	common = name_kind_t( name->kind & crtc->crtc.kind );
+	common = name->kind & crtc->crtc.kind;
 	
 	if ((common & name_xid) && name->xid == crtc->crtc.xid)
 	    break;
@@ -1263,7 +1245,7 @@ get_crtcs (void)
     int		c;
 
     num_crtcs = res->ncrtc;
-    crtcs = new crtc_t; //calloc (num_crtcs, sizeof (crtc_t));
+    crtcs = calloc (num_crtcs, sizeof (crtc_t));
     if (!crtcs) fatal ("out of memory\n");
     
     for (c = 0; c < res->ncrtc; c++)
@@ -1315,12 +1297,10 @@ static void
 crtc_add_output (crtc_t *crtc, output_t *output)
 {
     if (crtc->outputs)
-    {
-	crtc->outputs = (output_t**) realloc (crtc->outputs, (crtc->noutput + 1) * sizeof (output_t *));
-    }
+	crtc->outputs = realloc (crtc->outputs, (crtc->noutput + 1) * sizeof (output_t *));
     else
     {
-	crtc->outputs = (output_t**) malloc (sizeof (output_t *));
+	crtc->outputs = malloc (sizeof (output_t *));
 	crtc->x = output->x;
 	crtc->y = output->y;
 	crtc->rotation = output->rotation;
@@ -1355,7 +1335,7 @@ set_panning (void)
 	if (! (output->changes & changes_panning))
 	    continue;
 	if (! output->crtc_info->panning_info)
-	    output->crtc_info->panning_info = (XRRPanning*) malloc (sizeof(XRRPanning));
+	    output->crtc_info->panning_info = malloc (sizeof(XRRPanning));
 	memcpy (output->crtc_info->panning_info, &output->panning, sizeof(XRRPanning));
 	output->crtc_info->changing = 1;
     }
@@ -1532,7 +1512,7 @@ crtc_apply (crtc_t *crtc)
     if (!crtc->changing || !crtc->mode_info)
 	return RRSetConfigSuccess;
 
-    rr_outputs = (RROutput*) calloc (crtc->noutput, sizeof (RROutput));
+    rr_outputs = calloc (crtc->noutput, sizeof (RROutput));
     if (!rr_outputs)
 	return BadAlloc;
     for (o = 0; o < crtc->noutput; o++)
@@ -1762,14 +1742,14 @@ get_outputs (void)
 		switch (output_info->connection) {
 		case RR_Connected:
 		    if (!output_info->crtc) {
-			output->changes = changes_t( output->changes | changes_automatic );
+			output->changes |= changes_automatic;
 			output->automatic = True;
 		    }
 		    break;
 		case RR_Disconnected:
 		    if (output_info->crtc)
 		    {
-			output->changes = changes_t(output->changes | changes_automatic);
+			output->changes |= changes_automatic;
 			output->automatic = True;
 		    }
 		    break;
@@ -1790,7 +1770,7 @@ get_outputs (void)
 		if ((!(output->changes & changes_mode)))
 		{
 		    set_name_preferred (&output->mode);
-		    output->changes = changes_t( output->changes | changes_mode );
+		    output->changes |= changes_mode;
 		}
 		break;
 	    case RR_Disconnected:
@@ -1798,8 +1778,8 @@ get_outputs (void)
 		{
 		    set_name_xid (&output->mode, None);
 		    set_name_xid (&output->crtc, None);
-		    output->changes = changes_t( output->changes | changes_mode );
-		    output->changes = changes_t( output->changes | changes_crtc );
+		    output->changes |= changes_mode;
+		    output->changes |= changes_crtc;
 		}
 		break;
 	    }
@@ -1947,7 +1927,7 @@ set_positions (void)
 	    {
 		output->x = 0;
 		output->y = 0;
-		output->changes = changes_t( output->changes | changes_position );
+		output->changes |= changes_position;
 		any_set = True;
 		continue;
 	    }
@@ -1982,7 +1962,7 @@ set_positions (void)
 		output->x = relation->x;
 		output->y = relation->y;
 	    }
-	    output->changes = changes_t( output->changes | changes_position );
+	    output->changes |= changes_position;
 	    any_set = True;
 	}
 	if (!keep_going)
@@ -2012,7 +1992,7 @@ set_positions (void)
 
 	    output->x -= min_x;
 	    output->y -= min_y;
-	    output->changes = changes_t( output->changes | changes_position );
+	    output->changes |= changes_position;
 	}
     }
 }
@@ -2200,7 +2180,7 @@ pick_crtcs (void)
 	if (output->mode_info && !output->crtc_info)
 	    fatal ("cannot find crtc for output %s\n", output->output.string);
 	if (!output->changes && output->crtc_info != output->current_crtc_info)
-	    output->changes = changes_t( output->changes | changes_crtc );
+	    output->changes |= changes_crtc;
     }
 }
 
@@ -2255,32 +2235,32 @@ property_values_from_string(const char *str, const Atom type, const int format,
 
 	if (type == XA_INTEGER && format == 8)
 	{
-	    int8_t *ptr = (int8_t*) returned_bytes;
+	    int8_t *ptr = returned_bytes;
 	    ptr[nitems] = (int8_t) val;
 	}
 	else if (type == XA_INTEGER && format == 16)
 	{
-	    int16_t *ptr = (int16_t*) returned_bytes;
+	    int16_t *ptr = returned_bytes;
 	    ptr[nitems] = (int16_t) val;
 	}
 	else if (type == XA_INTEGER && format == 32)
 	{
-	    int32_t *ptr = (int32_t*) returned_bytes;
+	    int32_t *ptr = returned_bytes;
 	    ptr[nitems] = (int32_t) val;
 	}
 	else if (type == XA_CARDINAL && format == 8)
 	{
-	    uint8_t *ptr = (uint8_t*) returned_bytes;
+	    uint8_t *ptr = returned_bytes;
 	    ptr[nitems] = (uint8_t) val;
 	}
 	else if (type == XA_CARDINAL && format == 16)
 	{
-	    uint16_t *ptr = (uint16_t*) returned_bytes;
+	    uint16_t *ptr = returned_bytes;
 	    ptr[nitems] = (uint16_t) val;
 	}
 	else if (type == XA_CARDINAL && format == 32)
 	{
-	    uint32_t *ptr = (uint32_t*) returned_bytes;
+	    uint32_t *ptr = returned_bytes;
 	    ptr[nitems] = (uint32_t) val;
 	}
 	else
@@ -2309,14 +2289,14 @@ print_output_property_value(Bool is_edid,
     /* special-case the EDID */
     if (is_edid && value_format == 8)
     {
-	const uint8_t *val = (uint8_t*) value_bytes;
+	const uint8_t *val = value_bytes;
 	printf ("%02" PRIx8, *val);
 	return;
     }
 
     if (value_type == XA_ATOM && value_format == 32)
     {
-	const Atom *val = (Atom*) value_bytes;
+	const Atom *val = value_bytes;
 	char *str = XGetAtomName (dpy, *val);
 	if (str != NULL)
 	{
@@ -2330,19 +2310,19 @@ print_output_property_value(Bool is_edid,
     {
 	if (value_format == 8)
 	{
-	    const int8_t *val = (int8_t*) value_bytes;
+	    const int8_t *val = value_bytes;
 	    printf ("%" PRId8, *val);
 	    return;
 	}
 	if (value_format == 16)
 	{
-	    const int16_t *val = (int16_t*) value_bytes;
+	    const int16_t *val = value_bytes;
 	    printf ("%" PRId16, *val);
 	    return;
 	}
 	if (value_format == 32)
 	{
-	    const int32_t *val = (int32_t*) value_bytes;
+	    const int32_t *val = value_bytes;
 	    printf ("%" PRId32, *val);
 	    return;
 	}
@@ -2352,19 +2332,19 @@ print_output_property_value(Bool is_edid,
     {
 	if (value_format == 8)
 	{
-	    const uint8_t *val = (uint8_t*) value_bytes;
+	    const uint8_t *val = value_bytes;
 	    printf ("%" PRIu8, *val);
 	    return;
 	}
 	if (value_format == 16)
 	{
-	    const uint16_t *val = (uint16_t*) value_bytes;
+	    const uint16_t *val = value_bytes;
 	    printf ("%" PRIu16, *val);
 	    return;
 	}
 	if (value_format == 32)
 	{
-	    const uint32_t *val = (uint32_t*) value_bytes;
+	    const uint32_t *val = value_bytes;
 	    printf ("%" PRIu32, *val);
 	    return;
 	}
@@ -2468,7 +2448,7 @@ main (int argc, char **argv)
 	    if (output)
 	    {
 		output->refresh = rate;
-		output->changes = changes_t( output->changes | changes_refresh );
+		output->changes |= changes_refresh;
 		setit_1_2 = True;
 	    }
 	    action_requested = True;
@@ -2534,7 +2514,7 @@ main (int argc, char **argv)
 	    output = find_output_by_name (argv[i]);
 	    if (!output) {
 		output = add_output ();
-		set_name(&output->output, argv[i], name_kind_t( name_string|name_xid) );
+		set_name (&output->output, argv[i], name_string|name_xid);
 	    }
 	    
 	    setit_1_2 = True;
@@ -2544,21 +2524,21 @@ main (int argc, char **argv)
 	if (!strcmp ("--crtc", argv[i])) {
 	    if (++i >= argc) usage();
 	    if (!output) usage();
-	    set_name (&output->crtc, argv[i], name_kind_t( name_xid|name_index) );
-	    output->changes = changes_t( output->changes | changes_crtc );
+	    set_name (&output->crtc, argv[i], name_xid|name_index);
+	    output->changes |= changes_crtc;
 	    continue;
 	}
 	if (!strcmp ("--mode", argv[i])) {
 	    if (++i >= argc) usage();
 	    if (!output) usage();
-	    set_name (&output->mode, argv[i], name_kind_t(name_string|name_xid));
-	    output->changes = changes_t( output->changes | changes_mode );
+	    set_name (&output->mode, argv[i], name_string|name_xid);
+	    output->changes |= changes_mode;
 	    continue;
 	}
 	if (!strcmp ("--preferred", argv[i])) {
 	    if (!output) usage();
 	    set_name_preferred (&output->mode);
-	    output->changes = changes_t( output->changes | changes_mode );
+	    output->changes |= changes_mode;
 	    continue;
 	}
 	if (!strcmp ("--pos", argv[i])) {
@@ -2567,7 +2547,7 @@ main (int argc, char **argv)
 	    if (sscanf (argv[i], "%dx%d",
 			&output->x, &output->y) != 2)
 		usage ();
-	    output->changes = changes_t( output->changes | changes_position );
+	    output->changes |= changes_position;
 	    continue;
 	}
 	if (!strcmp ("--rotation", argv[i]) || !strcmp ("--rotate", argv[i])) {
@@ -2580,7 +2560,7 @@ main (int argc, char **argv)
 		usage ();
 	    output->rotation &= ~0xf;
 	    output->rotation |= 1 << dirind;
-	    output->changes = changes_t( output->changes | changes_rotation );
+	    output->changes |= changes_rotation;
 	    continue;
 	}
 	if (!strcmp ("--reflect", argv[i]) || !strcmp ("--reflection", argv[i])) {
@@ -2593,7 +2573,7 @@ main (int argc, char **argv)
 		usage ();
 	    output->rotation &= ~(RR_Reflect_X|RR_Reflect_Y);
 	    output->rotation |= dirind * RR_Reflect_X;
-	    output->changes = changes_t( output->changes | changes_reflection);
+	    output->changes |= changes_reflection;
 	    continue;
 	}
 	if (!strcmp ("--left-of", argv[i])) {
@@ -2601,7 +2581,7 @@ main (int argc, char **argv)
 	    if (!output) usage();
 	    output->relation = relation_left_of;
 	    output->relative_to = argv[i];
-	    output->changes = changes_t( output->changes | changes_relation);
+	    output->changes |= changes_relation;
 	    continue;
 	}
 	if (!strcmp ("--right-of", argv[i])) {
@@ -2609,7 +2589,7 @@ main (int argc, char **argv)
 	    if (!output) usage();
 	    output->relation = relation_right_of;
 	    output->relative_to = argv[i];
-	    output->changes = changes_t( output->changes | changes_relation );
+	    output->changes |= changes_relation;
 	    continue;
 	}
 	if (!strcmp ("--above", argv[i])) {
@@ -2617,7 +2597,7 @@ main (int argc, char **argv)
 	    if (!output) usage();
 	    output->relation = relation_above;
 	    output->relative_to = argv[i];
-	    output->changes = changes_t( output->changes | changes_relation );
+	    output->changes |= changes_relation;
 	    continue;
 	}
 	if (!strcmp ("--below", argv[i])) {
@@ -2625,7 +2605,7 @@ main (int argc, char **argv)
 	    if (!output) usage();
 	    output->relation = relation_below;
 	    output->relative_to = argv[i];
-	    output->changes = changes_t( output->changes | changes_relation );
+	    output->changes |= changes_relation;
 	    continue;
 	}
 	if (!strcmp ("--same-as", argv[i])) {
@@ -2633,7 +2613,7 @@ main (int argc, char **argv)
 	    if (!output) usage();
 	    output->relation = relation_same_as;
 	    output->relative_to = argv[i];
-	    output->changes = changes_t( output->changes | changes_relation );
+	    output->changes |= changes_relation;
 	    continue;
 	}
 	if (!strcmp ("--panning", argv[i])) {
@@ -2663,7 +2643,7 @@ main (int argc, char **argv)
 	    default:
 		usage ();
 	    }
-	    output->changes = changes_t( output->changes | changes_panning );
+	    output->changes |= changes_panning;
 	    continue;
 	}
 	if (!strcmp ("--gamma", argv[i])) {
@@ -2672,7 +2652,7 @@ main (int argc, char **argv)
 	    if (sscanf(argv[i], "%f:%f:%f", &output->gamma.red, 
 		    &output->gamma.green, &output->gamma.blue) != 3)
 		usage ();
-	    output->changes = changes_t( output->changes | changes_gamma );
+	    output->changes |= changes_gamma;
 	    setit_1_2 = True;
 	    continue;
 	}
@@ -2681,13 +2661,13 @@ main (int argc, char **argv)
 	    if (++i>=argc) usage();
 	    if (sscanf(argv[i], "%f", &output->brightness) != 1)
 		usage ();
-	    output->changes = changes_t( output->changes | changes_gamma );
+	    output->changes |= changes_gamma;
 	    setit_1_2 = True;
 	    continue;
 	}
 	if (!strcmp ("--primary", argv[i])) {
 	    if (!output) usage();
-	    output->changes = changes_t( output->changes | changes_primary );
+	    output->changes |= changes_primary;
 	    output->primary = True;
 	    setit_1_2 = True;
 	    continue;
@@ -2700,7 +2680,7 @@ main (int argc, char **argv)
 	if (!strcmp ("--set", argv[i])) {
 	    output_prop_t   *prop;
 	    if (!output) usage();
-	    prop = (output_prop_t*) malloc (sizeof (output_prop_t));
+	    prop = malloc (sizeof (output_prop_t));
 	    prop->next = output->props;
 	    output->props = prop;
 	    if (++i>=argc) usage ();
@@ -2708,7 +2688,7 @@ main (int argc, char **argv)
 	    if (++i>=argc) usage ();
 	    prop->value = argv[i];
 	    propit = True;
-	    output->changes = changes_t( output->changes | changes_property );
+	    output->changes |= changes_property;
 	    setit_1_2 = True;
 	    continue;
 	}
@@ -2729,7 +2709,7 @@ main (int argc, char **argv)
 		output->transform.filter = "nearest";
 	    output->transform.nparams = 0;
 	    output->transform.params = NULL;
-	    output->changes = changes_t( output->changes | changes_transform );
+	    output->changes |= changes_transform;
 	    continue;
 	}
 	if (!strcmp ("--scale-from", argv[i]))
@@ -2743,7 +2723,7 @@ main (int argc, char **argv)
 		usage ();
 	    output->scale_from_w = w;
 	    output->scale_from_h = h;
-	    output->changes = changes_t( output->changes | changes_transform );
+	    output->changes |= changes_transform;
 	    continue;
 	}
 	if (!strcmp ("--transform", argv[i])) {
@@ -2769,14 +2749,14 @@ main (int argc, char **argv)
 		output->transform.nparams = 0;
 		output->transform.params = NULL;
 	    }
-	    output->changes = changes_t( output->changes | changes_transform );
+	    output->changes |= changes_transform;
 	    continue;
 	}
 	if (!strcmp ("--off", argv[i])) {
 	    if (!output) usage();
 	    set_name_xid (&output->mode, None);
 	    set_name_xid (&output->crtc, None);
-	    output->changes = changes_t( output->changes | changes_mode );
+	    output->changes |= changes_mode;
 	    continue;
 	}
 	if (!strcmp ("--fb", argv[i])) {
@@ -2814,7 +2794,7 @@ main (int argc, char **argv)
 	    if (output)
 	    {
 		output->automatic = True;
-		output->changes = changes_t( output->changes |changes_automatic);
+		output->changes |= changes_automatic;
 	    }
 	    else
 		automatic = True;
@@ -2834,7 +2814,7 @@ main (int argc, char **argv)
 	}
 	if (!strcmp ("--newmode", argv[i]))
 	{
-	    umode_t  *m = (umode_t*) malloc (sizeof (umode_t));
+	    umode_t  *m = malloc (sizeof (umode_t));
 	    double    clock;
 	    
 	    ++i;
@@ -2875,10 +2855,10 @@ main (int argc, char **argv)
 	}
 	if (!strcmp ("--rmmode", argv[i]))
 	{
-	    umode_t  *m = (umode_t*) malloc (sizeof (umode_t));
+	    umode_t  *m = malloc (sizeof (umode_t));
 
 	    if (++i>=argc) usage ();
-	    set_name (&m->name, argv[i], name_kind_t(name_string|name_xid));
+	    set_name (&m->name, argv[i], name_string|name_xid);
 	    m->action = umode_destroy;
 	    m->next = umodes;
 	    umodes = m;
@@ -2888,12 +2868,12 @@ main (int argc, char **argv)
 	}
 	if (!strcmp ("--addmode", argv[i]))
 	{
-	    umode_t  *m = (umode_t*) malloc (sizeof (umode_t));
+	    umode_t  *m = malloc (sizeof (umode_t));
 
 	    if (++i>=argc) usage ();
-	    set_name (&m->output, argv[i], name_kind_t(name_string|name_xid));
+	    set_name (&m->output, argv[i], name_string|name_xid);
 	    if (++i>=argc) usage();
-	    set_name (&m->name, argv[i], name_kind_t(name_string|name_xid));
+	    set_name (&m->name, argv[i], name_string|name_xid);
 	    m->action = umode_add;
 	    m->next = umodes;
 	    umodes = m;
@@ -2903,12 +2883,12 @@ main (int argc, char **argv)
 	}
 	if (!strcmp ("--delmode", argv[i]))
 	{
-	    umode_t  *m = (umode_t*) malloc (sizeof (umode_t));
+	    umode_t  *m = malloc (sizeof (umode_t));
 
 	    if (++i>=argc) usage ();
-	    set_name (&m->output, argv[i], name_kind_t(name_string|name_xid));
+	    set_name (&m->output, argv[i], name_string|name_xid);
 	    if (++i>=argc) usage();
-	    set_name (&m->name, argv[i], name_kind_t(name_string|name_xid));
+	    set_name (&m->name, argv[i], name_string|name_xid);
 	    m->action = umode_delete;
 	    m->next = umodes;
 	    umodes = m;
@@ -3083,7 +3063,7 @@ main (int argc, char **argv)
 		    format = actual_format;
 		}
 
-		malloced_data = (unsigned char*) property_values_from_string
+		malloced_data = property_values_from_string
 		    (prop->value, type, actual_format, &nelements);
 
 		if (malloced_data)
@@ -3494,7 +3474,7 @@ main (int argc, char **argv)
 	    }
 	    else
 	    {
-		mode_shown = (Bool*) calloc (output_info->nmode, sizeof (Bool));
+		mode_shown = calloc (output_info->nmode, sizeof (Bool));
 		if (!mode_shown) fatal ("out of memory\n");
 		for (j = 0; j < output_info->nmode; j++)
 		{
@@ -3757,4 +3737,3 @@ main (int argc, char **argv)
     XRRFreeScreenConfigInfo(sc);
     return(ret);
 }
-
