@@ -127,10 +127,6 @@ if(UNIX)
     pkg_check_modules( LIBNOTIFY libnotify REQUIRED )
     list(APPEND OTHER_LIBS ${LIBNOTIFY_LIBRARIES})
 
-    pkg_check_modules( XRANDR xrandr REQUIRED )
-    pkg_check_modules( X11 x11 REQUIRED )
-    list(APPEND OTHER_LIBS ${XRANDR_LIBRARIES} ${X11_LIBRARIES})
-
     if(NOT WITH_LOCAL_OPENCV)
         pkg_check_modules( GTKMM gtkmm-2.4 REQUIRED )
         add_definitions( -DWITH_GTK2 )
