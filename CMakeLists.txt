@@ -117,7 +117,6 @@ if(WITH_NANA)
         VERBATIM
         ) 
     set(NANA_INCLUDE_DIRS ${NANA_INSTALL_DIR}/include )
-    add_dependencies( eyesthatblink nana_local )
 endif( )
 
 
@@ -223,6 +222,10 @@ if(WITH_LOCAL_OPENCV)
     add_dependencies( eyesthatblink opencv_local )
 endif()
 
+if(WITH_NANA)
+    add_dependencies( eyesthatblink nana_local)
+endif(WITH_NANA)
+
 target_link_libraries( eyesthatblink core ui )
 
 if(GTKMM_FOUND)
@@ -232,6 +235,9 @@ target_link_libraries( eyesthatblink ${OpenCV_LIBRARIES} )
 target_link_libraries( eyesthatblink ${Boost_LIBRARIES} )
 target_link_libraries( eyesthatblink ${ZLIB_LIBRARIES} )
 
+if(WITH_NANA)
+    target_link_libraries( eyesthatblink ${NANA_LIBRARIES} )
+endif( )
 
 if(UNIX AND NOT APPLE )
     target_link_libraries( eyesthatblink core ${OTHER_LIBS} )
