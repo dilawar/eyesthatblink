@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 cmake_policy(SET CMP0048 NEW)
 project( EyesThatBlink VERSION 1.0.0)
+
 add_definitions( --std=c++11 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -186,6 +187,7 @@ configure_file(
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/plog/include )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/core )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/ui )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/external/nana )
 
 
 # Add target and dependencies.
