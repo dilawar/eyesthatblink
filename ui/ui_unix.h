@@ -25,7 +25,6 @@ void toggleShowUserFace( );
 void loadSmallEyeCascade( bool value );
 void loadEyeGlassesCascade( bool value );
 
-
 int unix_ui( int argc, char* argv[] );
 
 #endif /* end of include guard: UI_UNIX_H */

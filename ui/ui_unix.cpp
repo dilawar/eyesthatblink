@@ -21,6 +21,12 @@
 #include "../actions/linux.h"
 #include "etbapplication.h"
 
+#ifdef WITH_NANA
+#include "nana/gui.hpp"
+#include "nana/gui/widgets/label.hpp"
+#include "nana/gui/widgets/checkbox.hpp"
+#endif
+
 #include "plog/Log.h"
 #include <boost/filesystem.hpp>
 
@@ -62,7 +68,7 @@ bool callback( int arg  )
  * @Returns Infinite loop.  
  */
 /* ----------------------------------------------------------------------------*/
-int unix_ui( int argc, char* argv[] )
+int unix_ui_gtk( int argc, char* argv[] )
 {
     LOG_INFO << "Constructing applet" << endl;
 
@@ -106,4 +112,33 @@ bool show_icon( )
 {
     pApp_->show_icon( );
     return true;
+}
+
+int unix_ui( int argc, char* argv[ ] )
+{
+
+#ifdef WITH_NANA
+
+
+    nana::form fm;
+    fm.caption( "EyesThatBlink" );
+    nana::place layout( fm );
+    layout.div( R"(<vertical abc weight=120>)" );
+
+    nana::checkbox eye( fm, "Small Eyes" );
+    nana::checkbox glass( fm, "Using Glasses" );
+    nana::checkbox showEyes( fm, "Show my eyes" );
+
+    layout[ "abc" ] << eye << glass << showEyes;
+
+    layout.collocate( );
+    fm.show( );
+    nana::exec( );
+
+    return 0;
+
+#else
+    return unix_ui_gtk( argc, argv );
+#endif
+
 }

@@ -96,6 +96,7 @@ message( STATUS "OpenCV libraries ${OpenCV_LIBRARIES}" )
 
 set(WITH_NANA TRUE)
 if(WITH_NANA)
+    add_definitions( -DWITH_NANA )
     set( NANA_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/nana )
     set( NANA_INSTALL_DIR ${CMAKE_BINARY_DIR}/_nana )
     set( NANA_BUILD_DIR ${CMAKE_BINARY_DIR}/_build_nana )
@@ -117,6 +118,7 @@ if(WITH_NANA)
         VERBATIM
         ) 
     set(NANA_INCLUDE_DIRS ${NANA_INSTALL_DIR}/include )
+    include_directories( ${NANA_INCLUDE_DIRS} )
 endif( )
 
 
@@ -161,6 +163,15 @@ if(UNIX)
         add_definitions( -DWITH_GTK3 )
     endif( )
     include_directories( ${GTKMM_INCLUDE_DIRS} )
+endif( )
+
+if(WITH_NANA)
+    pkg_check_modules( GDK2 gdk-x11-2.0 )
+    pkg_check_modules( X11 x11)
+    pkg_check_modules( XFT xft)
+    list(APPEND OTHER_LIBS ${GDK2_LIBRARIES} )
+    list(APPEND OTHER_LIBS ${X11_LIBRARIES} )
+    list(APPEND OTHER_LIBS ${XFT_LIBRARIES} )
 endif( )
 
 # pthreads
