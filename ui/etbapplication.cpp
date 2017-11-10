@@ -306,4 +306,5 @@ bool ETBApplication::show_icon( )
         image.set( pixbuf );
         icon_is_set_ = true;
     }
+    return true;
 }
