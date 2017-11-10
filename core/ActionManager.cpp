@@ -101,8 +101,8 @@ ActionManager::ActionManager ()
 
     LOG_INFO << "Blink threshold is " << config_manager_.getBlinkThreshold( );
 
-    display_ = "eDP1";
-    LOG_INFO << "Display is " << display_;
+    brightness_ = 0.0;
+    displays_ = find_display( );
 
 }  /* -----  end of method ActionManager::ActionManager  (constructor)  ----- */
 
@@ -272,13 +272,14 @@ void ActionManager::insert_state( const time_type_& t, const status_t_ st )
         {
             LOG_INFO << "Alerting user. Threshold " 
                      << config_manager_.getBlinkThreshold( );
+
             last_nofified_on = t;
-            alert( "You are not blinking enough!" );
-            stringstream cmd;
-            cmd << "xrandr --output " << display_  << " --brightness " 
-                    << max( 1.0, 10 * running_avg_activity_in_interval_ );
-            spawn( cmd.str( ) );
+            linux_set_brightness( );
         }
+    }
+    else
+    {
+        linux_set_brightness( );
     }
 }
 
@@ -339,3 +340,27 @@ void ActionManager::update_config_file( )
     }
 }
 
+void ActionManager::linux_set_brightness( )
+{
+    // Do make small changes.
+    double delta = max(0.0, 
+            running_avg_activity_in_interval_ - config_manager_.getBlinkThreshold( ) 
+            );
+    if( delta < 0.01 )
+        return;
+
+    double brightness = 10 * delta + 0.5;
+    brightness_ = min( 1.0, brightness );
+
+    if( brightness_ >= 0.99999 )
+        return;
+
+    for( auto display : displays_ )
+    {
+        if( display.size( ) < 1 )
+            continue;
+        stringstream cmd;
+        cmd << "xrandr --output " << display  << " --brightness " << brightness_;
+        spawn( cmd.str( ) );
+    }
+}

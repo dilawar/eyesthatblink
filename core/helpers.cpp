@@ -8,6 +8,7 @@
 #include <thread>
 #include <chrono>
 #include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
 
 #include <iomanip>
 #include <ctime>
@@ -15,6 +16,7 @@
 #include "constants.h"
 #include "globals.h"
 #include "helpers.h"
+#include "pstream.h"
 
 #if USE_BOOST_PROCESS
 #include <boost/process.hpp>
@@ -124,7 +126,7 @@ std::string expand_user(std::string path)
  * @Returns   
  */
 /* ----------------------------------------------------------------------------*/
-int spawn( const string& command )
+string spawn( const string& command )
 {
     vector<string> cmdVec;
     boost::algorithm::split( cmdVec, command, boost::is_any_of(" ") );
@@ -144,12 +146,43 @@ int spawn( const string& command )
 #else // NOT USING BOOST SUBPROCESS
 
     LOG_INFO << "Executing " << command;
-    return std::system( command.c_str( ) );
+    redi::ipstream proc( command );
+
+    stringstream ss;
+    string line;
+    while( std::getline( proc.out( ), line ) )
+        ss << line << endl;
+    return ss.str( );
 
 #endif
-    return 0;
+    return "";
 }
 
+
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  Find the display using xrander.
+ *
+ * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+vector<string> find_display( )
+{
+    const string out = spawn( "xrandr -q" );
+    boost::smatch what;
+    boost::regex disp_regex( "^(\\w+)\\s+connected" );
+    vector<string> res;
+
+    string line;
+    istringstream f( out );
+
+    while( std::getline(f, line ) )
+    {
+        if(boost::regex_search( line, what, disp_regex ))
+            res.push_back(  what[1] );
+    }
+    return res;
+}
 
 #if 0
 // WARN: Require gcc-5.0

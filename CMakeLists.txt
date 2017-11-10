@@ -13,6 +13,7 @@ else()
 endif()
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/external/plog/include )
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/external/pstreams-1.0.1/)
 
 set(USE_BOOST_PROCESS OFF)
 if(USE_BOOST_PROCESS)

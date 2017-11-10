@@ -64,6 +64,8 @@ class ActionManager
 
         void update_config_file( );
 
+        void linux_set_brightness(  );
+
     private:
 
         status_t_ prev_status_;
@@ -89,6 +91,9 @@ class ActionManager
         // Note down last two write time.
         std::array<time_t, 2> modification_times_;
 
+        double brightness_;
+
+
     public:
         
         unsigned long n_blinks_;
@@ -103,7 +108,7 @@ class ActionManager
         ofstream data_file_h_;
         ofstream config_file_h_;
 
-        string display_;
+        vector<string> displays_;
 
 }; /* -----  end of class ActionManager  ----- */
 

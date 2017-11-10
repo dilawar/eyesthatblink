@@ -22,7 +22,16 @@ void print_time( time_type_ time, const string end = "\n" );
 
 std::string expand_user(std::string path);
 
-int spawn( const string& command );
+string spawn( const string& command );
+
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  Find display using xrandr.
+ *
+ * @Returns   
+ */
+/* ----------------------------------------------------------------------------*/
+vector<string> find_display( );
 
 /**
  * @brief Compute the mean of given container.
