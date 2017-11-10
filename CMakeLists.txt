@@ -91,9 +91,35 @@ endif( )
 ##     FILE( GLOB OPENCV_EXTRA_LIBS "${OPENCV_INSTALL_DIR}/share/OpenCV/3rdparty/lib/*.a" )
 ##     set( OpenCV_LIBRARIES ${OPENCV_EXTRA_LIBS} ${OpenCV_LIBRARIES} )
 ## endif( )
-
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 message( STATUS "OpenCV libraries ${OpenCV_LIBRARIES}" )
+
+set(WITH_NANA TRUE)
+if(WITH_NANA)
+    set( NANA_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/nana )
+    set( NANA_INSTALL_DIR ${CMAKE_BINARY_DIR}/_nana )
+    set( NANA_BUILD_DIR ${CMAKE_BINARY_DIR}/_build_nana )
+    file(MAKE_DIRECTORY ${NANA_BUILD_DIR})
+
+    set( NANA_LIBRARIES ${NANA_INSTALL_DIR}/lib/libnana.a )
+    add_custom_target(nana_local DEPENDS ${NANA_LIBRARIES} )
+    add_custom_command( OUTPUT ${NANA_LIBRARIES}
+        COMMAND ${CMAKE_COMMAND} 
+                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                -DCMAKE_BUILD_TYPE=Release
+                -DBUILD_SHARED_LIBS=OFF 
+                -DCMAKE_INSTALL_PREFIX=${NANA_INSTALL_DIR} 
+            ${NANA_SOURCE_DIR}
+        COMMAND $(MAKE) 
+        COMMAND $(MAKE) install
+        WORKING_DIRECTORY ${NANA_BUILD_DIR}
+        COMMENT "Build nana locally"
+        VERBATIM
+        ) 
+    set(NANA_INCLUDE_DIRS ${NANA_INSTALL_DIR}/include )
+    add_dependencies( eyesthatblink nana_local )
+endif( )
+
 
 # Check for pkg-config modules. We need to link with their libs.
 find_package( PkgConfig REQUIRED )
@@ -187,8 +213,6 @@ configure_file(
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/plog/include )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/core )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/ui )
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/external/nana )
-
 
 # Add target and dependencies.
 add_executable( eyesthatblink 
