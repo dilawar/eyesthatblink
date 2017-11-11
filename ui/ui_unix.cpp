@@ -48,20 +48,13 @@ int nana_callback(  nana::picture& canvas )
     bool draw = process_frame( face );
     if( draw  )
     {
-        void* data = face.data;
+        unsigned char* data = face.data;
         int size = face.rows * face.cols;
         
-        // And user says that draw the face then draw it.
         std::cout << "Draw face: nelems " << size <<  std::endl;
         nana::paint::image img;
         img.open( data, size );
-
-        /*
-        cv::imwrite( "/tmp/a.png", face );
-        nana::paint::image img( "/tmp/a.png" );
-        */
         canvas.load( img );
-
     }
     
     auto t1 = clock( );
@@ -95,8 +88,8 @@ int unix_ui( int argc, char* argv[ ] )
     nana::checkbox glass( fm, "Using Glasses" );
     nana::checkbox showEyes( fm, "Show my eyes" );
     nana::picture canvas( fm, true );
-
     canvas.load( nana::paint::image( config_manager_.getIconpath() ));
+    // canvas.stretchable( true );
 
     layout[ "abc" ] << eye << glass << showEyes;
     layout[ "pic" ] << canvas;
@@ -111,6 +104,7 @@ int unix_ui( int argc, char* argv[ ] )
             mainThread.interval( timeout );
             }
         );
+
     mainThread.start( );
 
     fm.show( );
