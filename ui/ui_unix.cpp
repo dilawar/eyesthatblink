@@ -25,6 +25,7 @@
 #include "nana/gui.hpp"
 #include "nana/gui/widgets/label.hpp"
 #include "nana/gui/widgets/checkbox.hpp"
+#include "nana/gui/widgets/picture.hpp"
 #endif
 
 #include "plog/Log.h"
@@ -123,15 +124,18 @@ int unix_ui( int argc, char* argv[ ] )
     nana::form fm;
     fm.caption( "EyesThatBlink" );
     nana::place layout( fm );
-    layout.div( R"(<vertical abc weight=120>)" );
+    layout.div( R"(<vertical abcd weight=120>)" );
 
     nana::checkbox eye( fm, "Small Eyes" );
     nana::checkbox glass( fm, "Using Glasses" );
     nana::checkbox showEyes( fm, "Show my eyes" );
+    nana::picture face( fm, true );
 
-    layout[ "abc" ] << eye << glass << showEyes;
+    face.load( nana::paint::image( config_manager_.getIconpath() ));
 
+    layout[ "abcd" ] << eye << glass << showEyes << face;
     layout.collocate( );
+
     fm.show( );
     nana::exec( );
 
