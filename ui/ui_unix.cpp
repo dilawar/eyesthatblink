@@ -124,7 +124,7 @@ int unix_ui( int argc, char* argv[ ] )
     nana::form fm;
     fm.caption( "EyesThatBlink" );
     nana::place layout( fm );
-    layout.div( R"(<vertical abcd weight=120>)" );
+    layout.div( R"(<vertical abc weight=120><pic>)" );
 
     nana::checkbox eye( fm, "Small Eyes" );
     nana::checkbox glass( fm, "Using Glasses" );
@@ -133,7 +133,8 @@ int unix_ui( int argc, char* argv[ ] )
 
     face.load( nana::paint::image( config_manager_.getIconpath() ));
 
-    layout[ "abcd" ] << eye << glass << showEyes << face;
+    layout[ "abc" ] << eye << glass << showEyes;
+    layout[ "pic" ] << face;
     layout.collocate( );
 
     fm.show( );
