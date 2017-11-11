@@ -70,6 +70,8 @@ ActionManager::ActionManager ()
     data_file_ = bfs::path( expand_user( DATA_FILE_PATH ) );
     config_file_ = bfs::path( expand_user( CONFIG_FILE_PATH ) );
 
+    std::cout << "|| Initializing Action Manager" << std::endl;
+
     initialize( );
 
 }
@@ -111,8 +113,12 @@ void ActionManager::initialize( void )
     cout << "Blink threshold is " << config_manager_.getBlinkThreshold( ) << endl;
     brightness_ = 0.0;
     displays_ = find_display( );
-    for( auto d : displays_ )
-        cout << "  Display " << d << endl;
+    if( displays_.size( ) > 0 )
+        for( auto d : displays_ )
+            cout << "||| Display " << d << endl;
+    else
+        cout << "|| Err: No display found" << endl;
+
 
 }  /* -----  end of method ActionManager::ActionManager  (constructor)  ----- */
 
