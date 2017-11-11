@@ -44,17 +44,32 @@ extern ConfigManager config_manager_;
 int nana_callback(  nana::picture& canvas )
 {
     auto t0 = std::clock( );
+    int fixedWidth = 200;
     cv::Mat face;
     bool draw = process_frame( face );
     if( draw  )
     {
-        unsigned char* data = face.data;
+        int width = face.cols;
+        cv::resize( face, face, cv::Size( fixedWidth, face.rows * fixedWidth / width ) );
+        cv::imwrite( "/tmp/a.png", face );
+
+        uchar* data = face.data;
         int size = face.rows * face.cols;
         
+#if 0
         std::cout << "Draw face: nelems " << size <<  std::endl;
         nana::paint::image img;
         img.open( data, size );
         canvas.load( img );
+        // for (size_t i = 0; i < size; i++)
+        // {
+            // cout << data[ i ] << ' ';
+        // }
+        // cout << endl;
+#else
+        canvas.load( nana::paint::image( "/tmp/a.png" ) );
+
+#endif
     }
     
     auto t1 = clock( );
