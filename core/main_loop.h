@@ -24,7 +24,7 @@ void init_camera( );
 
 void close_camera( );
 
-bool process_frame(  );
+bool process_frame( cv::Mat& face );
 
 bool locate_pupil( const cv::Mat face );
 
@@ -33,9 +33,5 @@ void reload_eye_cascade( );
 cv::Mat find_face( cv::Mat frame, int method, bool show );
 
 void update_config_file( );
-
-bool show_user_face( const cv::Mat& face );
-
-bool show_icon( );
 
 #endif /* end of include guard: MAIN_LOOP_H */

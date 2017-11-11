@@ -156,12 +156,12 @@ bool locate_pupil( const cv::Mat face )
 
 /* --------------------------------------------------------------------------*/
 /**
- * @Synopsis  Process a sinal frame.
+ * @Synopsis  Process a singal frame. Find face and update its value.
  *
- * @Returns   
+ * @Returns True if face with pupils were located, false otherwise.
  */
 /* ----------------------------------------------------------------------------*/
-bool process_frame(  )
+bool process_frame( cv::Mat& face )
 {
     cap_.read(frame_);
 
@@ -169,7 +169,6 @@ bool process_frame(  )
     {
         // Resize the frame. Resizing the frame to half speeds up the whole
         // process.
-        cv::Mat face;
         double rescaleFactor = 480.0 / frame_.cols;
         cv::resize( frame_, frame_, cv::Size(0,0), rescaleFactor, rescaleFactor );
         face = find_face( frame_ );
@@ -206,24 +205,18 @@ bool process_frame(  )
                         , cv::FONT_HERSHEY_SIMPLEX, 0.3, 255
                         );
 
-                // Show user face in UI.
-                //show_user_face( face );
+                return true;
             }
             else
-            {
-                show_icon( );
-            }
+                return false;
         }
         else
             LOG_INFO << "No face found.";
     }
     else
-    {
         am_.insert_state( t_, AWAY );
-        LOG_INFO << "Empty frame";
-    }
 
-    return true;
+    return false;
 }
 
 void init_camera( )

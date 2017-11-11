@@ -23,158 +23,57 @@ if(USE_BOOST_PROCESS)
 endif( )
 
 find_package(OpenCV REQUIRED)
-if(OpenCV_FOUND)
-    set(WITH_LOCAL_OPENCV OFF)
-else( )
-set( WITH_LOCAL_OPENCV ON )
-endif( )
-
-## if(WITH_LOCAL_OPENCV)
-##     add_definitions( -DOPENCV3 )
-##     set( OPENCV_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/opencv-3.3.0 )
-##     set( OPENCV_INSTALL_DIR ${CMAKE_BINARY_DIR}/_opencv )
-##     set( OPENCV_BUILD_DIR ${CMAKE_BINARY_DIR}/_build_opencv )
-##     file(MAKE_DIRECTORY ${OPENCV_BUILD_DIR})
-## 
-##     set( OpenCV_LIBRARIES 
-##         ${OPENCV_INSTALL_DIR}/lib/libopencv_calib3d.a
-##         ${OPENCV_INSTALL_DIR}/lib/libopencv_features2d.a
-##         # ${OPENCV_INSTALL_DIR}/lib/libopencv_flann.a
-##         # ${OPENCV_INSTALL_DIR}/lib/libopencv_highgui.a
-##         # ${OPENCV_INSTALL_DIR}/lib/libopencv_ml.a
-##         ${OPENCV_INSTALL_DIR}/lib/libopencv_objdetect.a
-##         # ${OPENCV_INSTALL_DIR}/lib/libopencv_photo.a
-##         # ${OPENCV_INSTALL_DIR}/lib/libopencv_stitching.a
-##         # ${OPENCV_INSTALL_DIR}/lib/libopencv_superres.a
-##         # ${OPENCV_INSTALL_DIR}/lib/libopencv_video.a
-##         # ${OPENCV_INSTALL_DIR}/lib/libopencv_videostab.a
-##         ${OPENCV_INSTALL_DIR}/lib/libopencv_imgcodecs.a
-##         ${OPENCV_INSTALL_DIR}/lib/libopencv_videoio.a
-##         ${OPENCV_INSTALL_DIR}/lib/libopencv_imgproc.a
-##         ${OPENCV_INSTALL_DIR}/lib/libopencv_core.a
-##         )
-##     add_custom_target(opencv_local DEPENDS ${OpenCV_LIBRARIES} )
-##     add_custom_command( OUTPUT ${OpenCV_LIBRARIES}
-##         COMMAND ${CMAKE_COMMAND} 
-##                 -DCMAKE_BUILD_TYPE=Release
-##                 -DBUILD_SHARED_LIBS=OFF 
-##                 -DCMAKE_INSTALL_PREFIX=${OPENCV_INSTALL_DIR} 
-##                 -DBUILD_DOCS=OFF 
-##                 -DBUILD_TESTS=OFF 
-##                 -DWITH_TIFF=OFF
-##                 -DWITH_ITT=OFF
-##                 -DWITH_IPP=OFF
-##                 -DWITH_JPEG=OFF
-##                 -DWITH_QT=OFF
-##                 if(UNIX AND NOT APPPLE)
-##                     -DWITH_GTK=ON
-##                 endif( )
-##                 -DWITH_EIGEN=OFF
-##                 -DWITH_FFMPEG=OFF
-##                 -DWITH_GSTREAMER=OFF
-##                 -DWITH_OPENEXR=OFF
-##                 -DWITH_JPEG=OFF
-##                 -DWITH_JASPER=OFF
-##                 -DWITH_CUDA=OFF
-##                 -DSKIP_BUILD_RPATH=TRUE
-##                 -DBUILD_opencv_python=OFF 
-##                 -DBUILD_opencv_python2=OFF 
-##                 -DBUILD_opencv_python3=OFF 
-##             ${OPENCV_SOURCE_DIR}
-##         COMMAND $(MAKE) 
-##         COMMAND $(MAKE) install
-##         WORKING_DIRECTORY ${OPENCV_BUILD_DIR}
-##         COMMENT "Build opencv locally"
-##         VERBATIM
-##         ) 
-##     set(OpenCV_INCLUDE_DIRS ${OPENCV_INSTALL_DIR}/include )
-##     FILE( GLOB OPENCV_EXTRA_LIBS "${OPENCV_INSTALL_DIR}/share/OpenCV/3rdparty/lib/*.a" )
-##     set( OpenCV_LIBRARIES ${OPENCV_EXTRA_LIBS} ${OpenCV_LIBRARIES} )
-## endif( )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 message( STATUS "OpenCV libraries ${OpenCV_LIBRARIES}" )
 
-set(WITH_NANA TRUE)
-if(WITH_NANA)
-    add_definitions( -DWITH_NANA )
-    set( NANA_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/nana )
-    set( NANA_INSTALL_DIR ${CMAKE_BINARY_DIR}/_nana )
-    set( NANA_BUILD_DIR ${CMAKE_BINARY_DIR}/_build_nana )
-    file(MAKE_DIRECTORY ${NANA_BUILD_DIR})
+add_definitions( -DWITH_NANA )
+set( NANA_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/nana )
+set( NANA_INSTALL_DIR ${CMAKE_BINARY_DIR}/_nana )
+set( NANA_BUILD_DIR ${CMAKE_BINARY_DIR}/_build_nana )
+file(MAKE_DIRECTORY ${NANA_BUILD_DIR})
 
-    set( NANA_LIBRARIES ${NANA_INSTALL_DIR}/lib/libnana.a )
-    add_custom_target(nana_local DEPENDS ${NANA_LIBRARIES} )
-    add_custom_command( OUTPUT ${NANA_LIBRARIES}
-        COMMAND ${CMAKE_COMMAND} 
-                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                -DCMAKE_BUILD_TYPE=Release
-                -DBUILD_SHARED_LIBS=OFF 
-                -DCMAKE_INSTALL_PREFIX=${NANA_INSTALL_DIR} 
-            ${NANA_SOURCE_DIR}
-        COMMAND $(MAKE) 
-        COMMAND $(MAKE) install
-        WORKING_DIRECTORY ${NANA_BUILD_DIR}
-        COMMENT "Build nana locally"
-        VERBATIM
-        ) 
-    set(NANA_INCLUDE_DIRS ${NANA_INSTALL_DIR}/include )
-    include_directories( ${NANA_INCLUDE_DIRS} )
-endif( )
+set( NANA_LIBRARIES ${NANA_INSTALL_DIR}/lib/libnana.a )
+add_custom_target(nana_local DEPENDS ${NANA_LIBRARIES} )
+add_custom_command( OUTPUT ${NANA_LIBRARIES}
+    COMMAND ${CMAKE_COMMAND} 
+            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+            -DCMAKE_BUILD_TYPE=Release
+            -DBUILD_SHARED_LIBS=OFF 
+            -DCMAKE_INSTALL_PREFIX=${NANA_INSTALL_DIR} 
+        ${NANA_SOURCE_DIR}
+    COMMAND $(MAKE) 
+    COMMAND $(MAKE) install
+    WORKING_DIRECTORY ${NANA_BUILD_DIR}
+    COMMENT "Build nana locally"
+    VERBATIM
+    ) 
+set(NANA_INCLUDE_DIRS ${NANA_INSTALL_DIR}/include )
+include_directories( ${NANA_INCLUDE_DIRS} )
 
 
 # Check for pkg-config modules. We need to link with their libs.
 find_package( PkgConfig REQUIRED )
 set( OTHER_LIBS "" )
-if( WITH_LOCAL_OPENCV )
-    if( UNIX AND NOT APPLE )
-        pkg_check_modules( GTK3 gtk+-3.0 )
-        list(APPEND OTHER_LIBS ${GTK3_LIBRARIES})
-        pkg_check_modules( GLIB2 glib-2.0 )
-        list(APPEND OTHER_LIBS ${GLIB2_LIBRARIES})
-        pkg_check_modules( LIBPNG libpng )
-        list(APPEND OTHER_LIBS ${LIBPNG_LIBRARIES})
-        pkg_check_modules( V4L2 libv4l2 )
-        list(APPEND OTHER_LIBS ${V4L2_LIBRARIES})
-        pkg_check_modules( V4L1 libv4l1 )
-        list(APPEND OTHER_LIBS ${V4L1_LIBRARIES})
-        pkg_check_modules( LIBDC1394 libdc1394-2 )
-        list(APPEND OTHER_LIBS ${LIBDC1394_LIBRARIES})
-        pkg_check_modules( LIBWEBP libwebp )
-        list(APPEND OTHER_LIBS ${LIBWEBP_LIBRARIES})
-    else(APPLE)
-        pkg_check_modules( LIBPNG libpng )
-    endif( )
 
-    # Other libs.
-    find_package( ZLIB )
-    # libdl 
-    list(APPEND OTHER_LIBS dl )
-endif( )
+pkg_check_modules( LIBNOTIFY libnotify REQUIRED )
+list(APPEND OTHER_LIBS ${LIBNOTIFY_LIBRARIES})
+add_definitions( ${LIBNOTIFY_CFLAGS} )
 
-if(UNIX)
-    pkg_check_modules( LIBNOTIFY libnotify REQUIRED )
-    list(APPEND OTHER_LIBS ${LIBNOTIFY_LIBRARIES})
+pkg_check_modules( GDK2 gdk-x11-2.0 )
+list(APPEND OTHER_LIBS ${GDK2_LIBRARIES} )
 
-    if(NOT WITH_LOCAL_OPENCV)
-        pkg_check_modules( GTKMM gtkmm-2.4 REQUIRED )
-        add_definitions( -DWITH_GTK2 )
-    else( )
-        pkg_check_modules( GTKMM gtkmm-3.0 REQUIRED )
-        add_definitions( -DWITH_GTK3 )
-    endif( )
-    include_directories( ${GTKMM_INCLUDE_DIRS} )
-endif( )
+pkg_check_modules( X11 x11)
+list(APPEND OTHER_LIBS ${X11_LIBRARIES} )
 
-if(WITH_NANA)
-    pkg_check_modules( GDK2 gdk-x11-2.0 )
-    pkg_check_modules( X11 x11)
-    pkg_check_modules( XFT xft)
-    pkg_check_modules( LIBPNG libpng)
-    list(APPEND OTHER_LIBS ${GDK2_LIBRARIES} )
-    list(APPEND OTHER_LIBS ${X11_LIBRARIES} )
-    list(APPEND OTHER_LIBS ${XFT_LIBRARIES} )
-    list(APPEND OTHER_LIBS ${LIBPNG_LIBRARIES} )
-endif( )
+pkg_check_modules( XFT xft)
+list(APPEND OTHER_LIBS ${XFT_LIBRARIES} )
+
+pkg_check_modules( LIBPNG libpng)
+list(APPEND OTHER_LIBS ${LIBPNG_LIBRARIES} )
+
+pkg_check_modules( FONTCONFIG fontconfig)
+list(APPEND OTHER_LIBS ${FONTCONFIG_LIBRARIES} )
+
 
 # pthreads
 find_package( Threads )
@@ -227,30 +126,14 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/core )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/ui )
 
 # Add target and dependencies.
-add_executable( eyesthatblink 
-    WIN32 MACOSX_BUNDLE main.cpp  ${ICON_FILE_48} )
-
-if(WITH_LOCAL_OPENCV)
-    # Build opencv before eyesthatblink only if required.
-    add_dependencies( eyesthatblink opencv_local )
-endif()
-
-if(WITH_NANA)
-    add_dependencies( eyesthatblink nana_local)
-endif(WITH_NANA)
+add_executable( eyesthatblink WIN32 MACOSX_BUNDLE main.cpp  ${ICON_FILE_48} )
+add_dependencies( eyesthatblink nana_local)
 
 target_link_libraries( eyesthatblink core ui )
-
-if(GTKMM_FOUND)
-    target_link_libraries( eyesthatblink ${GTKMM_LIBRARIES} )
-endif()
 target_link_libraries( eyesthatblink ${OpenCV_LIBRARIES} )
 target_link_libraries( eyesthatblink ${Boost_LIBRARIES} )
 target_link_libraries( eyesthatblink ${ZLIB_LIBRARIES} )
-
-if(WITH_NANA)
-    target_link_libraries( eyesthatblink ${NANA_LIBRARIES} )
-endif( )
+target_link_libraries( eyesthatblink ${NANA_LIBRARIES} )
 
 if(UNIX AND NOT APPLE )
     target_link_libraries( eyesthatblink core ${OTHER_LIBS} )
@@ -262,14 +145,6 @@ elseif(APPLE)
     target_link_libraries( eyesthatblink "-framework CoreVideo" )
     target_link_libraries( eyesthatblink ${LIBPNG_LIBRARIES} )
 endif( )
-
-## Write configuration file.
-## Write the binary
-#configure_file( 
-#    ${CMAKE_CURRENT_SOURCE_DIR}/eyesthatblink.in 
-#    ${CMAKE_BINARY_DIR}/eyesthatblink
-#    )
-
 
 add_custom_target( run 
     DEPENDS eyesthatblink 

@@ -11,7 +11,4 @@ set(CORE_SRCS
     )
 
 add_library( core STATIC ${CORE_SRCS} )
-
-if(WITH_LOCAL_OPENCV)
-    add_dependencies( core opencv_local )
-endif( )
+add_dependencies( core nana_local )

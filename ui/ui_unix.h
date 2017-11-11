@@ -17,7 +17,6 @@
 #define UI_UNIX_H
 
 #include "ui.h"
-#include "gtkmm.h"
 #include "../core/main_loop.h"
 #include <opencv2/opencv.hpp>
 
