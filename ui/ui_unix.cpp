@@ -24,6 +24,7 @@
 #include "nana/gui/widgets/label.hpp"
 #include "nana/gui/widgets/checkbox.hpp"
 #include "nana/gui/widgets/picture.hpp"
+#include "nana/gui/widgets/slider.hpp"
 #include "nana/gui/timer.hpp"
 
 #include "plog/Log.h"
@@ -90,16 +91,32 @@ int unix_ui( int argc, char* argv[ ] )
     nana::form fm;
     fm.caption( "EyesThatBlink" );
     nana::place layout( fm );
-    layout.div( R"(<vertical abc weight=120><pic>)" );
+    layout.div( R"(<vert <horizontal <vert <a><b>> <vert <pic><c>>> 
+        <d weight=20 margin=1>>)" );
 
     nana::checkbox eye( fm, "Small Eyes" );
+    
+
+
     nana::checkbox glass( fm, "Using Glasses" );
     nana::checkbox showEyes( fm, "Show my eyes" );
+
+    // Add slider.
+    nana::slider thres(fm );
+    thres.maximum( 12 );
+    thres.move_step( true );
+    thres.vernier( [](unsigned maximum, unsigned val ) {
+            return std::to_string( 10 + val ) + " blinks per min";
+            } );
+
     nana::picture canvas( fm, true );
     canvas.load( nana::paint::image( config_manager_.getIconpath() ));
-    // canvas.stretchable( true );
 
-    layout[ "abc" ] << eye << glass << showEyes;
+    layout[ "a" ] << eye;
+    layout[ "b" ] << glass;
+    layout[ "c" ] << showEyes;
+    layout[ "d" ] << thres;
+     
     layout[ "pic" ] << canvas;
     layout.collocate( );
 
