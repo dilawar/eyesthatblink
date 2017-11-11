@@ -50,25 +50,19 @@ int nana_callback(  nana::picture& canvas )
     if( draw  )
     {
         int width = face.cols;
-        cv::resize( face, face, cv::Size( fixedWidth, face.rows * fixedWidth / width ) );
-        cv::imwrite( "/tmp/a.png", face );
-
-        uchar* data = face.data;
-        int size = face.rows * face.cols;
+        cv::resize( face, face
+                , cv::Size( fixedWidth, face.rows * fixedWidth / width ) );
         
-#if 0
-        std::cout << "Draw face: nelems " << size <<  std::endl;
         nana::paint::image img;
-        img.open( data, size );
+#if 1
+        vector<uchar> vec;
+        cv::imencode( ".png", face, vec );
+        img.open( vec.data( ), vec.size( ) );
         canvas.load( img );
-        // for (size_t i = 0; i < size; i++)
-        // {
-            // cout << data[ i ] << ' ';
-        // }
-        // cout << endl;
 #else
-        canvas.load( nana::paint::image( "/tmp/a.png" ) );
-
+        cv::imwrite( "/tmp/a.png", face );
+        img.open( "/tmp/a.png" );
+        canvas.load( img );
 #endif
     }
     
@@ -76,7 +70,6 @@ int nana_callback(  nana::picture& canvas )
     time_to_process_one_frame_ = 1000.0 * ( t1 - t0 ) / CLOCKS_PER_SEC;
     return max( 100, 2 * int( time_to_process_one_frame_ ));
 }
-
 
 // Show user face in main window.
 bool show_user_face( const cv::Mat& gray )
