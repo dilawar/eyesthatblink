@@ -26,6 +26,7 @@
 #include "nana/gui/widgets/label.hpp"
 #include "nana/gui/widgets/checkbox.hpp"
 #include "nana/gui/widgets/picture.hpp"
+#include "nana/gui/timer.hpp"
 #endif
 
 #include "plog/Log.h"
@@ -57,6 +58,15 @@ bool callback( int arg  )
     time_to_process_one_frame_ = 1000.0 * ( t1 - t0 ) * CLOCKS_PER_SEC;
     return true;
 }
+
+void nana_callback( const nana::arg_elapse& arg  )
+{
+    auto t0 = std::clock( );
+    process_frame( );
+    auto t1 = clock( );
+    time_to_process_one_frame_ = 1000.0 * ( t1 - t0 ) * CLOCKS_PER_SEC;
+}
+
 
 /* --------------------------------------------------------------------------*/
 /**
@@ -136,6 +146,12 @@ int unix_ui( int argc, char* argv[ ] )
     layout[ "abc" ] << eye << glass << showEyes;
     layout[ "pic" ] << face;
     layout.collocate( );
+
+    // Add nana timer.
+    nana::timer mainThread;
+    mainThread.interval( 1000 );
+    mainThread.elapse( &nana_callback );
+    mainThread.start( );
 
     fm.show( );
     nana::exec( );

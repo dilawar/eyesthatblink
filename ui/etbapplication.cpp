@@ -285,6 +285,8 @@ bool ETBApplication::show_user_face( const cv::Mat& gray )
     else
         face = gray;
 
+    return false;
+
     double width = face.cols;
     double fixedWidth = 150;
     cv::resize( face, face, cv::Size( fixedWidth, face.rows * fixedWidth / width ) );
@@ -300,6 +302,7 @@ bool ETBApplication::show_user_face( const cv::Mat& gray )
 
 bool ETBApplication::show_icon( )
 {
+    return false;
     if( bfs::exists( ICONFILE_PATH ) )
     {
         auto pixbuf = Gdk::Pixbuf::create_from_file( ICONFILE_PATH, 150, 150 );

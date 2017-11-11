@@ -207,7 +207,7 @@ bool process_frame(  )
                         );
 
                 // Show user face in UI.
-                show_user_face( face );
+                //show_user_face( face );
             }
             else
             {
