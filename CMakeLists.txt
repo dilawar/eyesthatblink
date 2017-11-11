@@ -169,9 +169,11 @@ if(WITH_NANA)
     pkg_check_modules( GDK2 gdk-x11-2.0 )
     pkg_check_modules( X11 x11)
     pkg_check_modules( XFT xft)
+    pkg_check_modules( LIBPNG libpng)
     list(APPEND OTHER_LIBS ${GDK2_LIBRARIES} )
     list(APPEND OTHER_LIBS ${X11_LIBRARIES} )
     list(APPEND OTHER_LIBS ${XFT_LIBRARIES} )
+    list(APPEND OTHER_LIBS ${LIBPNG_LIBRARIES} )
 endif( )
 
 # pthreads
