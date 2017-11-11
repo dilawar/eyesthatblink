@@ -16,12 +16,8 @@
  * =============================================================================
  */
 
-#include "ActionManager.h"
-#include "ConfigManager.h"
-
 #include <iostream>
 #include <sstream>
-
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #if USE_BOOST_PROCESS
@@ -36,6 +32,8 @@
 #endif
 
 #endif
+
+#include "globals.h"
 
 extern ConfigManager config_manager_;
 
@@ -72,6 +70,17 @@ ActionManager::ActionManager ()
     data_file_ = bfs::path( expand_user( DATA_FILE_PATH ) );
     config_file_ = bfs::path( expand_user( CONFIG_FILE_PATH ) );
 
+    initialize( );
+
+}
+
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  Initialize everything.
+ */
+/* ----------------------------------------------------------------------------*/
+void ActionManager::initialize( void )
+{
     // IF config_file_ or data_file_ directory is not found, create them.
     bfs::path configDir = config_file_.parent_path( );
     bfs::path dataDir = data_file_.parent_path( );
@@ -99,10 +108,11 @@ ActionManager::ActionManager ()
         modification_times_[1] = getCurrentTime( );
     }
 
-    LOG_INFO << "Blink threshold is " << config_manager_.getBlinkThreshold( );
-
+    cout << "Blink threshold is " << config_manager_.getBlinkThreshold( ) << endl;
     brightness_ = 0.0;
     displays_ = find_display( );
+    for( auto d : displays_ )
+        cout << "  Display " << d << endl;
 
 }  /* -----  end of method ActionManager::ActionManager  (constructor)  ----- */
 
@@ -160,6 +170,7 @@ void ActionManager::alert( const string& what )
             );
     notify_notification_set_timeout( note, 3000 );
     notify_notification_show( note, NULL);
+
     //g_object_unref( G_OBJECT(note) );
     //notify_uninit( );
 #endif // OS_IS_APPLE

@@ -176,10 +176,14 @@ vector<string> find_display( )
     string line;
     istringstream f( out );
 
+
     while( std::getline(f, line ) )
     {
         if(boost::regex_search( line, what, disp_regex ))
+        {
             res.push_back(  what[1] );
+            LOG_INFO << " : Found display " << what[1];
+        }
     }
     return res;
 }

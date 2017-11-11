@@ -25,7 +25,6 @@
 
 namespace boostfs = boost::filesystem;
 
-
 ConfigManager::ConfigManager( )
 {
     configFile_ = expand_user( CONFIG_FILE_PATH );

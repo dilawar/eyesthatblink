@@ -14,7 +14,6 @@
  */
 
 #ifndef CONFIGMANAGER_H
-
 #define CONFIGMANAGER_H
 
 #include <string>

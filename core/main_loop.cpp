@@ -35,8 +35,7 @@
 namespace bfs = boost::filesystem;
 
 extern ConfigManager config_manager_;
-
-ActionManager am_;
+extern ActionManager am_;
 
 extern cv::VideoCapture cap_;
 
@@ -229,14 +228,11 @@ bool process_frame(  )
 void init_camera( )
 {
     cap_ = cv::VideoCapture( 0 );
-
     if( ! cap_.isOpened( ) )
     {
-        cerr << "Failed to open default camera. Existing ... " << endl;
+        LOG_ERROR << "Failed to open default camera. Existing ... " << endl;
         exit( -1 );
     }
-
-
 }
 
 /* --------------------------------------------------------------------------*/

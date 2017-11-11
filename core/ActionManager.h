@@ -19,6 +19,10 @@
 #ifndef  ActionManager_INC
 #define  ActionManager_INC
 
+#include "globals.h"
+#include "helpers.h"
+#include "../actions/linux.h"
+
 #include <chrono>
 #include <array>
 #include <vector>
@@ -26,14 +30,12 @@
 #include <fstream>
 #include <boost/filesystem.hpp>
 
-#include "../actions/linux.h"
-
 namespace bfs = boost::filesystem;
 
 using namespace std;
 
-#include "globals.h"
-#include "helpers.h"
+enum status_t_ { OPEN, CLOSE, AWAY, BLINK };
+typedef std::chrono::time_point<std::chrono::system_clock> time_type_;
 
 /*
  * =====================================================================================
@@ -65,6 +67,8 @@ class ActionManager
         void update_config_file( );
 
         void linux_set_brightness(  );
+        
+        void initialize( void );
 
     private:
 

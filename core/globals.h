@@ -29,10 +29,8 @@
 #include <array>
 
 #include "ConfigManager.h"
+#include "ActionManager.h"
 
-enum status_t_ { OPEN, CLOSE, AWAY, BLINK };
-
-typedef std::chrono::time_point<std::chrono::system_clock> time_type_;
 
 extern bool away_;
 extern double fps_;
@@ -61,6 +59,8 @@ extern bool finished_;
 extern bool small_eyes_;
 
 extern ConfigManager config_manager_;
+
+extern ActionManager am_;
 
 extern cv::VideoCapture cap_;
 

@@ -1,8 +1,26 @@
+/***
+ *       Filename:  helpers.h
+ *
+ *    Description:  Helper functions.
+ *
+ *        Version:  0.0.1
+ *        Created:  2017-11-11
+ *       Revision:  none
+ *
+ *         Author:  Dilawar Singh <dilawars@ncbs.res.in>
+ *   Organization:  NCBS Bangalore
+ *
+ *        License:  GNU GPL2
+ */
+
 #ifndef HELPERS_H
 #define HELPERS_H
 
 #include <deque>
+
 #include "globals.h"
+
+typedef std::chrono::time_point<std::chrono::system_clock> time_type_;
 
 using namespace std;
 

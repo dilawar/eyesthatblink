@@ -20,6 +20,7 @@
 #include "globals.h"
 #include "opencv2/opencv.hpp"
 
+
 bool away_ = false;
 double fps_ = 20.0;
 
@@ -47,5 +48,7 @@ bool small_eyes_ = false;
 bool wearing_glasses_ = false;
 
 ConfigManager config_manager_;
+
+ActionManager am_;
 
 cv::VideoCapture cap_;

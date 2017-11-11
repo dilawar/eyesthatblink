@@ -154,12 +154,12 @@ elseif(UNIX)
     if(APPLE)
         add_definitions( -DOS_IS_APPLE )
     endif(APPLE)
-    set( APP_DATA_DIR "\$HOME/.cache" )
+    set( APP_DATA_DIR "\$HOME/.config/eyesthatblink/" )
     set( CONFIG_FILE_PATH "${APP_DATA_DIR}/${CMAKE_PROJECT_NAME}.conf" )
     set( DATA_FILE_PATH "${APP_DATA_DIR}/${CMAKE_PROJECT_NAME}.data" )
 endif( )
 
-set( LOG_FILE_PATH /tmp/_eyesthatblink.log ) # log file.
+set( LOG_FILE_PATH "\$HOME/.cache/eyesthatblink.log" ) # log file.
 set( AVERAGE_BLINK_DURATION 200 )   # in ms.
 
 set(ICON_FILE_48 ${CMAKE_CURRENT_SOURCE_DIR}/data/EyesThatBlink.png)
