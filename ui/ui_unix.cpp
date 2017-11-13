@@ -56,6 +56,7 @@ int nana_callback(  nana::picture& canvas )
         
         nana::paint::image img;
 #if 1
+        cout << "Drawing " << endl;
         vector<uchar> vec;
         cv::imencode( ".png", face, vec );
         img.open( vec.data( ), vec.size( ) );
@@ -66,6 +67,8 @@ int nana_callback(  nana::picture& canvas )
         canvas.load( img );
 #endif
     }
+    else
+        cout << "Not Drawing " << endl;
     
     auto t1 = clock( );
     time_to_process_one_frame_ = 1000.0 * ( t1 - t0 ) / CLOCKS_PER_SEC;
