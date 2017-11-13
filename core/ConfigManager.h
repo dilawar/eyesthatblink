@@ -56,7 +56,7 @@ class ConfigManager
 
         void setShowUserFace( bool val );
 
-        void reload_eye_cascade( );
+        void reloadEyeCascade( );
 
         template<typename T>
         void setValue( const string& key, const T value )

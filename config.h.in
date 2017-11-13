@@ -10,4 +10,11 @@
 #define CONFIG_FILE_PATH        "@CONFIG_FILE_PATH@"
 #define VERSION                 "@PROJECT_VERSION@"
 
+#define KEY_FRACTION_EYELID_CLOSED_TIME "global.fraction_eyelid_closed_time"
+#define KEY_ICON_PATH                   "global.icon_path"
+#define KEY_BLINK_RATE_PER_MINUTE       "global.blink_rate_per_minute"
+#define KEY_USER_HAS_SMALL_EYESS        "global.user_has_small_eyes"
+#define KEY_USER_WEARING_GLASSES        "global.user_wearing_glasses"
+#define KEY_SHOW_USER_FACE              "global.show_user_face"
+
 #endif /* end of include guard: CONFIG_H */

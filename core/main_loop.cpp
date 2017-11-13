@@ -105,11 +105,18 @@ void reload_eye_cascade(  )
         cascadefile = config_manager_.getCascadeFile( "haarcascade_eye_tree_eyeglasses.xml" );
 
     LOG_DEBUG << "Changing cascade file to " << cascadefile;
-    bool res = eye_cascade.load( cascadefile );
-    if( ! res )
+    if( boostfs::exists( cascadefile ) )
     {
-        LOG_ERROR << "Failed to load " << cascadefile;
-        throw runtime_error( "failed to load cascade" );
+        bool res = eye_cascade.load( cascadefile );
+        if( ! res )
+        {
+            LOG_ERROR << "Failed to load " << cascadefile;
+            throw runtime_error( "failed to load cascade" );
+        }
+    }
+    else
+    {
+        LOG_WARNING << "File " << cascadefile << " not found";
     }
 }
 
@@ -246,4 +253,10 @@ void close_camera( )
 void update_config_file( )
 {
     am_.update_config_file( );
+}
+
+void init( )
+{
+    LOG_INFO << "Initializing";
+    config_manager_.writeConfigFile( );
 }

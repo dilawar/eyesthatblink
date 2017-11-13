@@ -344,13 +344,13 @@ void ActionManager::update_config_file( )
 void ActionManager::linux_set_brightness( )
 {
     // Do make small changes.
-    double delta = max(0.0, 
-            running_avg_activity_in_interval_ - config_manager_.getBlinkThreshold( ) 
-            );
-    if( delta < 0.01 )
-        return;
+    double frac = max(0.0, 
+             ( running_avg_activity_in_interval_ - 
+                config_manager_.getBlinkThreshold( ) 
+                ) / config_manager_.getBlinkThreshold( )
+             );
 
-    double brightness = 10 * delta + 0.5;
+    double brightness = 0.5 + frac;
     brightness_ = min( 1.0, brightness );
 
     if( brightness_ >= 0.99999 )

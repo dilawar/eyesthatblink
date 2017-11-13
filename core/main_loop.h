@@ -34,4 +34,6 @@ cv::Mat find_face( cv::Mat frame, int method, bool show );
 
 void update_config_file( );
 
+void init( );
+
 #endif /* end of include guard: MAIN_LOOP_H */

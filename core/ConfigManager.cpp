@@ -22,6 +22,7 @@
 #include "plog/Log.h"
 
 #include "../config.h"
+#include "main_loop.h"
 
 namespace boostfs = boost::filesystem;
 
@@ -56,6 +57,8 @@ ConfigManager::ConfigManager( )
     else
     {
         LOG_DEBUG << "Writing config file to " << configFile_;
+        bfs::create_directories( bfs::path( configFile_ ).parent_path( ) );
+        sleep( 1 );
         writeConfigFile( );
     }
 
@@ -75,12 +78,12 @@ ConfigManager::~ConfigManager( )
 /* ----------------------------------------------------------------------------*/
 double ConfigManager::getBlinkThreshold( void )
 {
-    return configTree_.get<double>( "global.fraction_eyelid_closed_time" );
+    return configTree_.get<double>( KEY_FRACTION_EYELID_CLOSED_TIME );
 }
 
 double ConfigManager::getBlinkPerMinuteThreshold( )
 {
-    return configTree_.get<double>( "global.blink_rate_per_minute" );
+    return configTree_.get<double>( KEY_BLINK_RATE_PER_MINUTE );
 }
 
 /* --------------------------------------------------------------------------*/
@@ -93,10 +96,10 @@ double ConfigManager::getBlinkPerMinuteThreshold( )
 void ConfigManager::setBlinkThreshold( double blinkratePerMinute )
 {
     LOG_DEBUG << "Setting blink threshold to " << blinkratePerMinute << " blinks/minute";
-    configTree_.put( "global.blink_rate_per_minute", blinkratePerMinute );
+    configTree_.put( KEY_BLINK_RATE_PER_MINUTE, blinkratePerMinute );
 
     // Blink threshold is fraction of time, eye lids are closed.
-    configTree_.put( "global.fraction_eyelid_closed_time"
+    configTree_.put( KEY_FRACTION_EYELID_CLOSED_TIME 
                      , blinkratePerMinute * AVG_BLINK_DURATION / 60000.0
                    );
     writeConfigFile( );
@@ -110,7 +113,11 @@ void ConfigManager::setBlinkThreshold( double blinkratePerMinute )
 void ConfigManager::writeConfigFile( )
 {
     LOG_DEBUG << "Writing to config file " << configFile_;
-    boost::property_tree::write_ini( configFile_, configTree_ );
+    try {
+        boost::property_tree::write_ini( configFile_, configTree_ );
+    } catch( const std::exception &e ) {
+        LOG_ERROR << "Failed to write config file " << e.what( );
+    }
 }
 
 void ConfigManager::readConfigFile( )
@@ -121,7 +128,7 @@ void ConfigManager::readConfigFile( )
 
 const string ConfigManager::getIconpath( )
 {
-    string iconPath = configTree_.get<string>( "global.icon_path" );
+    string iconPath = configTree_.get<string>( KEY_ICON_PATH );
 
     if( iconPath.size( ) < 1 )
     {
@@ -169,45 +176,27 @@ const string ConfigManager::getCascadeFile( const string& cascadeName )
 
 void ConfigManager::setUserHasSmallEyes( bool val )
 {
-    setValue<bool>( "global.user_has_small_eyes", val );
+    setValue<bool>( KEY_USER_HAS_SMALL_EYESS , val );
     writeConfigFile( );
-    reload_eye_cascade( );
+    reloadEyeCascade( );
 }
 
 void ConfigManager::setUserWearningGlasses( bool val )
 {
-    setValue<bool>( "global.user_wearing_glasses", val );
+    setValue<bool>( KEY_USER_WEARING_GLASSES, val );
     writeConfigFile( );
-    reload_eye_cascade( );
+    reloadEyeCascade( );
 }
 
 void ConfigManager::setShowUserFace( bool val )
 {
-    setValue<bool>( "global.show_user_face", val );
+    setValue<bool>( KEY_SHOW_USER_FACE, val );
     writeConfigFile( );
 }
 
-void ConfigManager::reload_eye_cascade( )
+void ConfigManager::reloadEyeCascade( )
 {
-#if 0
-    bool smallEyes = getValue<bool>( "global.user_has_small_eyes" );
-    bool wearingGlasses = getValue<bool>( "global.user_wearing_glasses" );
-    string cascadefile = getCascadeFile( "haarcascade_eye.xml" );
-
-    if( smallEyes )
-        cascadefile = getCascadeFile( "haarcascade_mcs_eyepair_small.xml" );
-
-    if( wearingGlasses )
-        cascadefile = getCascadeFile( "haarcascade_eye_tree_eyeglasses.xml" );
-
-    LOG_DEBUG << "Changing cascade file to " << cascadefile;
-    bool res = eye_cascade.load( cascadefile );
-    if( ! res )
-    {
-        LOG_ERROR << "Failed to load " << cascadefile;
-        throw runtime_error( "failed to load cascade" );
-    }
-#endif 
     // Is in main_loop.h
+    LOG_INFO << "Reloading cascade files";
     reload_eye_cascade( );
 }

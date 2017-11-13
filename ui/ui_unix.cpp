@@ -112,19 +112,19 @@ int unix_ui( int argc, char* argv[ ] )
         <d weight=20 margin=1>>)" );
 
     // Checkbox. Now add click signal.
-    nana::checkbox eye( fm, "Small Eyes" );
-    eye.check( config_manager_.getValue<bool>( "global.user_has_small_eyes" ));
+    nana::checkbox eye( fm, "I have small eyes" );
+    eye.check( config_manager_.getValue<bool>( KEY_USER_HAS_SMALL_EYESS ));
     eye.events( ).click( [&eye]( ) { setUserHasSmallEyes( eye.checked( ) ); } );
 
     // Checkbox. Now add if wearning glasses.
-    nana::checkbox glass( fm, "Using Glasses" );
-    glass.check( config_manager_.getValue<bool>( "global.user_wearning_glasses" ) );
+    nana::checkbox glass( fm, "I am wearning glasses" );
+    glass.check( config_manager_.getValue<bool>( KEY_USER_WEARING_GLASSES ) );
     glass.events( ).click( [&glass]( ) { 
             setUserWearningGlasses( glass.checked( ) ); 
             });
 
     nana::checkbox showMyFace( fm, "Show my face" );
-    showMyFace.check( config_manager_.getValue<bool>( "global.show_user_face" ) );
+    showMyFace.check( config_manager_.getValue<bool>( KEY_SHOW_USER_FACE ) );
     showMyFace.events( ).click( [&showMyFace]( ) { 
             setShowUserFace( showMyFace.checked( ) ); 
             } );

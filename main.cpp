@@ -40,6 +40,8 @@ int main( int argc, char* argv[] )
     plog::init(plog::debug, &consoleAppender);
 #endif
 
+    init( );
+
     LOG_INFO << "Initializing ";
     init_camera( );
     unix_ui( argc, argv );
