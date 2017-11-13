@@ -166,3 +166,48 @@ const string ConfigManager::getCascadeFile( const string& cascadeName )
     throw runtime_error( "Cascade file " + cascadeName + " not found" );
 }
 
+
+void ConfigManager::setUserHasSmallEyes( bool val )
+{
+    setValue<bool>( "global.user_has_small_eyes", val );
+    writeConfigFile( );
+    reload_eye_cascade( );
+}
+
+void ConfigManager::setUserWearningGlasses( bool val )
+{
+    setValue<bool>( "global.user_wearing_glasses", val );
+    writeConfigFile( );
+    reload_eye_cascade( );
+}
+
+void ConfigManager::setShowUserFace( bool val )
+{
+    setValue<bool>( "global.show_user_face", val );
+    writeConfigFile( );
+}
+
+void ConfigManager::reload_eye_cascade( )
+{
+#if 0
+    bool smallEyes = getValue<bool>( "global.user_has_small_eyes" );
+    bool wearingGlasses = getValue<bool>( "global.user_wearing_glasses" );
+    string cascadefile = getCascadeFile( "haarcascade_eye.xml" );
+
+    if( smallEyes )
+        cascadefile = getCascadeFile( "haarcascade_mcs_eyepair_small.xml" );
+
+    if( wearingGlasses )
+        cascadefile = getCascadeFile( "haarcascade_eye_tree_eyeglasses.xml" );
+
+    LOG_DEBUG << "Changing cascade file to " << cascadefile;
+    bool res = eye_cascade.load( cascadefile );
+    if( ! res )
+    {
+        LOG_ERROR << "Failed to load " << cascadefile;
+        throw runtime_error( "failed to load cascade" );
+    }
+#endif 
+    // Is in main_loop.h
+    reload_eye_cascade( );
+}

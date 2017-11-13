@@ -50,11 +50,19 @@ class ConfigManager
 
         const string getCascadeFile( const string& cascadeName );
 
+        void setUserHasSmallEyes( bool val );
+
+        void setUserWearningGlasses( bool val );
+
+        void setShowUserFace( bool val );
+
+        void reload_eye_cascade( );
 
         template<typename T>
         void setValue( const string& key, const T value )
         {
             configTree_.put<T>( key, value );
+            writeConfigFile( );
         }
 
         template<typename T>

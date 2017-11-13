@@ -32,8 +32,8 @@ namespace bfs = boost::filesystem;
 
 using namespace std;
 
-#include "globals.h"
-#include "helpers.h"
+enum status_t_ { OPEN, CLOSE, AWAY, BLINK };
+typedef std::chrono::time_point<std::chrono::system_clock> time_type_;
 
 /*
  * =====================================================================================

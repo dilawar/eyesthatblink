@@ -65,6 +65,28 @@ int nana_callback(  nana::picture& canvas )
     return max( 100, 2 * int( time_to_process_one_frame_ ));
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  Check if use has small eyes.
+ *
+ * @Param eye
+ */
+/* ----------------------------------------------------------------------------*/
+void setUserHasSmallEyes( bool value )
+{
+    config_manager_.setUserHasSmallEyes( value );
+}
+
+void setUserWearningGlasses( bool value )
+{
+    config_manager_.setUserWearningGlasses( value );
+}
+
+void setShowUserFace( bool value )
+{
+    config_manager_.setShowUserFace( value );
+}
+
 // Show user face in main window.
 bool show_user_face( const cv::Mat& gray )
 {
@@ -84,15 +106,28 @@ int unix_ui( int argc, char* argv[ ] )
     nana::form fm;
     fm.caption( "EyesThatBlink" );
     nana::place layout( fm );
+
+    // Layout of gui.
     layout.div( R"(<vert <horizontal <vert <a><b>> <vert <pic><c>>> 
         <d weight=20 margin=1>>)" );
 
+    // Checkbox. Now add click signal.
     nana::checkbox eye( fm, "Small Eyes" );
-    
+    eye.check( config_manager_.getValue<bool>( "global.user_has_small_eyes" ));
+    eye.events( ).click( [&eye]( ) { setUserHasSmallEyes( eye.checked( ) ); } );
 
-
+    // Checkbox. Now add if wearning glasses.
     nana::checkbox glass( fm, "Using Glasses" );
-    nana::checkbox showEyes( fm, "Show my eyes" );
+    glass.check( config_manager_.getValue<bool>( "global.user_wearning_glasses" ) );
+    glass.events( ).click( [&glass]( ) { 
+            setUserWearningGlasses( glass.checked( ) ); 
+            });
+
+    nana::checkbox showMyFace( fm, "Show my face" );
+    showMyFace.check( config_manager_.getValue<bool>( "global.show_user_face" ) );
+    showMyFace.events( ).click( [&showMyFace]( ) { 
+            setShowUserFace( showMyFace.checked( ) ); 
+            } );
 
     // Add slider.
     nana::slider thres(fm );
@@ -107,7 +142,7 @@ int unix_ui( int argc, char* argv[ ] )
 
     layout[ "a" ] << eye;
     layout[ "b" ] << glass;
-    layout[ "c" ] << showEyes;
+    layout[ "c" ] << showMyFace;
     layout[ "d" ] << thres;
      
     layout[ "pic" ] << canvas;

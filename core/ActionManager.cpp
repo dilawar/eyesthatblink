@@ -18,6 +18,7 @@
 
 #include "ActionManager.h"
 #include "ConfigManager.h"
+#include "helpers.h"
 
 #include <iostream>
 #include <sstream>

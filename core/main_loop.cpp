@@ -36,7 +36,7 @@ namespace bfs = boost::filesystem;
 
 extern ConfigManager config_manager_;
 
-ActionManager am_;
+extern ActionManager am_;
 
 extern cv::VideoCapture cap_;
 

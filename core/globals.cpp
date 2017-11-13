@@ -48,4 +48,6 @@ bool wearing_glasses_ = false;
 
 ConfigManager config_manager_;
 
+ActionManager am_;
+
 cv::VideoCapture cap_;

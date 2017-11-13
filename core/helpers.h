@@ -6,6 +6,8 @@
 
 using namespace std;
 
+typedef std::chrono::time_point<std::chrono::system_clock> time_type_;
+
 bool rectInImage(cv::Rect rect, cv::Mat image);
 bool inMat(cv::Point p,int rows,int cols);
 
