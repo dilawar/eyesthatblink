@@ -53,7 +53,7 @@ void meanStd( const deque<T> vec, T* avg, T * stddev  = 0 )
     T m = mean( vec );
     *avg = m;
 
-    if( stddev > 0 )
+    if( *stddev > 0 )
     {
         T sum = 0.0;
         for( T v : vec )

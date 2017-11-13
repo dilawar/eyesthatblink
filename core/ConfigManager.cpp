@@ -58,6 +58,7 @@ ConfigManager::ConfigManager( )
         LOG_DEBUG << "Writing config file to " << configFile_;
         writeConfigFile( );
     }
+
 }
 
 
