@@ -55,21 +55,11 @@ int nana_callback(  nana::picture& canvas )
                 , cv::Size( fixedWidth, face.rows * fixedWidth / width ) );
         
         nana::paint::image img;
-#if 1
-        cout << "Drawing " << endl;
         vector<uchar> vec;
         cv::imencode( ".png", face, vec );
         img.open( vec.data( ), vec.size( ) );
         canvas.load( img );
-#else
-        cv::imwrite( "/tmp/a.png", face );
-        img.open( "/tmp/a.png" );
-        canvas.load( img );
-#endif
     }
-    else
-        cout << "Not Drawing " << endl;
-    
     auto t1 = clock( );
     time_to_process_one_frame_ = 1000.0 * ( t1 - t0 ) / CLOCKS_PER_SEC;
     return max( 100, 2 * int( time_to_process_one_frame_ ));

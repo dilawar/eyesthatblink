@@ -192,7 +192,7 @@ bool process_frame( cv::Mat& face )
                 am_.insert_state( t_, OPEN );
 
             // Show eyes only in debug mode.
-            //if( config_manager_.getValue<bool>( "global.show_user_face" ) )
+            if( config_manager_.getValue<bool>( "global.show_user_face" ) )
             {
                 string msg = std::to_string( am_.n_blinks_ );
                 msg += "," + std::to_string( am_.running_avg_activity_ );
@@ -207,8 +207,8 @@ bool process_frame( cv::Mat& face )
 
                 return true;
             }
-            //else
-            //  return false;
+            else
+             return false;
         }
         else
             LOG_INFO << "No face found.";
