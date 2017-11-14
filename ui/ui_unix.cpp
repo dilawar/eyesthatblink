@@ -25,6 +25,7 @@
 #include "nana/gui/widgets/checkbox.hpp"
 #include "nana/gui/widgets/picture.hpp"
 #include "nana/gui/widgets/slider.hpp"
+#include "nana/gui/screen.hpp"
 #include "nana/gui/timer.hpp"
 
 #include "plog/Log.h"
@@ -104,6 +105,11 @@ void setBlinkThreshold( int val )
 
 int unix_ui( int argc, char* argv[ ] )
 {
+#if 0
+    // Check the display.
+    auto s = nana::screen( );
+    cout << "Display index " << s.get_primary( ).get_index( ) << endl;
+#endif 
 
     nana::form fm( {0,0,400,200} );
     fm.caption( "EyesThatBlink" );
