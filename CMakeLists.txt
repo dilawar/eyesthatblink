@@ -75,6 +75,10 @@ list(APPEND OTHER_LIBS ${LIBPNG_LIBRARIES} )
 pkg_check_modules( FONTCONFIG fontconfig)
 list(APPEND OTHER_LIBS ${FONTCONFIG_LIBRARIES} )
 
+pkg_check_modules( XRANDR xrandr)
+list(APPEND OTHER_LIBS ${XRANDR_LIBRARIES} )
+
+
 
 # pthreads
 find_package( Threads )

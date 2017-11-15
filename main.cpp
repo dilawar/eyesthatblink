@@ -17,6 +17,7 @@
 #include <iostream>
 
 #include "core/globals.h"
+#include "core/helpers.h"
 #include "core/main_loop.h"
 #include "plog/Log.h"
 #include "config.h"
@@ -40,11 +41,15 @@ int main( int argc, char* argv[] )
     plog::init(plog::debug, &consoleAppender);
 #endif
 
+    set_brightness( 0.9 );
     init( );
 
     LOG_INFO << "Initializing ";
     init_camera( );
     unix_ui( argc, argv );
+
+    // reset to 1.
+    set_brightness( 1.0 );
     return 0;
 }
 

@@ -26,6 +26,8 @@ std::string expand_user(std::string path);
 
 string spawn( const string& command );
 
+void set_brightness( double frac );
+
 /* --------------------------------------------------------------------------*/
 /**
  * @Synopsis  Find display using xrandr.

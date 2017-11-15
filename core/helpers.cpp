@@ -184,6 +184,18 @@ vector<string> find_display( )
     return res;
 }
 
+void set_brightness( double frac )
+{
+    vector<string> displays = find_display( );
+    for( auto d : displays )
+    {
+        stringstream ss;
+        ss << "xrandr --display " << d << " --brightness " << frac;
+        spawn( ss.str( ) );
+    }
+}
+
+
 #if 0
 // WARN: Require gcc-5.0
 void print_time( time_type_ time, const std::string end )

@@ -18,5 +18,4 @@
 #define ACTION_H
 
 
-
 #endif /* end of include guard: ACTION_H */

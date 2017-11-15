@@ -17,6 +17,4 @@
 
 #define LINUX_H
 
-int set_brightness( double f );
-
 #endif /* end of include guard: LINUX_H */
