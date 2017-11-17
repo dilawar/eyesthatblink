@@ -23,3 +23,8 @@ LIST(APPEND LIBRARIES_TO_LINK ${XCB_UTIL_LIBRARIES})
 
 add_library( xbacklight ./xbacklight.cc)
 target_link_libraries( xbacklight ${LIBRARIES_TO_LINK} )
+
+# test program
+add_executable( test_xbacklight test_xbacklight.cpp )
+target_link_libraries( test_xbacklight xbacklight )
+add_dependencies( test_xbacklight xbacklight )
