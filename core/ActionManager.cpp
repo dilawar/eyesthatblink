@@ -18,19 +18,19 @@
 
 #include <iostream>
 #include <sstream>
+#include <future>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/numeric/conversion/cast.hpp>
+#include <boost/lexical_cast.hpp>
 
 #if USE_BOOST_PROCESS
 #include <boost/process.hpp>
 #endif
 
 #if OS_IS_UNIX
-
-#if OS_IS_APPLE
-#else
+#include "../actions/xbacklight.h"
 #include <libnotify/notify.h>
-#endif
-
+#elif OS_IS_APPLE
 #endif
 
 #include "globals.h"
@@ -168,18 +168,14 @@ void ActionManager::alert( const string& what )
 {
 
 #if OS_IS_UNIX 
-#if OS_IS_APPLE 
-#else
     notify_init( "Eyes That Blink" );
     NotifyNotification * note = notify_notification_new( 
             "Alert", what.c_str(), "dialog-information" 
             );
-    notify_notification_set_timeout( note, 3000 );
+    notify_notification_set_timeout( note, 1000 );
     notify_notification_show( note, NULL);
 
-    //g_object_unref( G_OBJECT(note) );
-    //notify_uninit( );
-#endif // OS_IS_APPLE
+#elif OS_IS_APPLE 
 #endif  // OS_IS_LINUX
 
     LOG_INFO << "Alerting " << what << endl;
@@ -290,6 +286,7 @@ void ActionManager::insert_state( const time_type_& t, const status_t_ st )
             LOG_INFO << "Alerting user. Threshold " 
                      << config_manager_.getBlinkThreshold( );
 
+            alert(  "You are not blinking enough" );
             last_nofified_on = t;
             linux_set_brightness( );
         }
@@ -357,27 +354,34 @@ void ActionManager::update_config_file( )
     }
 }
 
-void ActionManager::linux_set_brightness( )
+void ActionManager::linux_set_brightness( double frac )
 {
     // Do make small changes.
-    double delta = max(0.0, 
+    double brightness = 1.0, delta = 0.0;
+    if( frac < 0.0 )
+    {
+        delta = max(0.0, 
             running_avg_activity_in_interval_ - config_manager_.getBlinkThreshold( ) 
             );
-    if( delta < 0.01 )
-        return;
-
-    double brightness = 10 * delta + 0.5;
-    brightness_ = min( 1.0, brightness );
-
-    if( brightness_ >= 0.99999 )
-        return;
-
-    for( auto display : displays_ )
-    {
-        if( display.size( ) < 1 )
-            continue;
-        stringstream cmd;
-        cmd << "xrandr --output " << display  << " --brightness " << brightness_;
-        spawn( cmd.str( ) );
+        brightness = 10 * delta + 0.5;
     }
+    else
+        brightness = frac;
+
+    if( frac >= 1.0 && brightness_ > 1.0 )
+        return;
+
+    int bg = boost::numeric_cast<unsigned int>( ceil( 100 * brightness ) );
+
+    const char* perc = boost::lexical_cast<string>( bg ).c_str( );
+
+    LOG_DEBUG << "XBACKLIGHT Setting brightness to " << perc;
+    std::vector<const char*> args = { "xbacklight", "-set", perc };
+
+    std::async( std::launch::async
+            , [args](){ xbacklight_main( 3, args ); }
+            );
+
+    // Now set the brightness
+    brightness_ = brightness;
 }

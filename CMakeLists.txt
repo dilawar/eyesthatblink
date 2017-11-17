@@ -186,6 +186,7 @@ configure_file(
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/plog/include )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/core )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/ui )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/actions )
 
 
 # Add target and dependencies.
@@ -197,7 +198,7 @@ if(WITH_LOCAL_OPENCV)
     add_dependencies( eyesthatblink opencv_local )
 endif()
 
-target_link_libraries( eyesthatblink core ui )
+target_link_libraries( eyesthatblink core ui xbacklight)
 
 if(GTKMM_FOUND)
     target_link_libraries( eyesthatblink ${GTKMM_LIBRARIES} )

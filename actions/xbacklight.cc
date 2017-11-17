@@ -20,11 +20,9 @@
  * OF THIS SOFTWARE.
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
 #define  PACKAGE_STRING "ETB_XBACKLIGHT"
+
+#include "xbacklight.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,7 +38,7 @@
 
 typedef enum { Get, Set, Inc, Dec } op_t;
 
-static char *program_name;
+static const char *program_name;
 
 static xcb_atom_t backlight, backlight_new_, backlight_legacy;
 
@@ -117,10 +115,13 @@ backlight_set (xcb_connection_t *conn, xcb_randr_output_t output, long value)
 				      1, (unsigned char *)&value);
 }
 
-int
-xbacklight_main (int argc, char **argv)
+double
+xbacklight_main (int argc, std::vector<const char*> args )
 {
-    char    *dpy_name = NULL;
+    // Convert vector to const char*
+    const char** argv = &args[0];
+
+    const char    *dpy_name = NULL;
     op_t    op = Get;
     int	    value = 0;
     int	    i;
@@ -304,7 +305,7 @@ xbacklight_main (int argc, char **argv)
 		    max = values[1];
 
 		    if (op == Get) {
-			printf ("%f\n", (cur - min) * 100 / (max - min));
+                        return (cur - min) * 100 / (max - min);
 		    } else {
 			set = value * (max - min) / 100;
 			switch (op) {

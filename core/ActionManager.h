@@ -66,7 +66,7 @@ class ActionManager
 
         void update_config_file( );
 
-        void linux_set_brightness(  );
+        void linux_set_brightness( double frac = -1.0  );
         
         void initialize( void );
 
@@ -104,7 +104,6 @@ class ActionManager
 
         double running_avg_activity_;
         double running_avg_activity_in_interval_;
-
 
         bfs::path data_file_;
         bfs::path config_file_;

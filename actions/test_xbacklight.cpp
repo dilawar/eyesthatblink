@@ -1,9 +1,10 @@
 #include "xbacklight.h"
+#include <vector>
 
 int main(int argc, const char *argv[])
 {
     int narg = 3;
-    char* args[3]  = { "xbacklight", "-set", "50" };
+    std::vector<const char*> args  = { "xbacklight", "-set", "50" };
     xbacklight_main( narg, args );
 
     args[2]  = "100";

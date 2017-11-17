@@ -1,8 +1,8 @@
 #ifndef XBACKLIGHT_H
-
 #define XBACKLIGHT_H
 
+#include <vector>
 
-int xbacklight_main (int argc, char **argv);
+double xbacklight_main (int argc, std::vector<const char*> args );
 
 #endif /* end of include guard: XBACKLIGHT_H */

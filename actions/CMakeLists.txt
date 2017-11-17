@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
 
-if(UNIX AND NOT APPLE)
-    set(SRCS linux.cpp)
-endif( )
-add_library( action ${SRCS} )
-
 # xbacklight 
 find_package( PkgConfig REQUIRED )
 set(LIBRARIES_TO_LINK "" )
