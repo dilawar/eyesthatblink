@@ -27,7 +27,9 @@ namespace boostfs = boost::filesystem;
 
 ConfigManager::ConfigManager( )
 {
-    configFile_ = expand_user( CONFIG_FILE_PATH );
+    config_file_ = bfs::path( expand_user( CONFIG_FILE_PATH ) );
+
+    initialize( );
 
     configTree_.put( "global.fraction_eyelid_closed_time", 0.1f );
     configTree_.put( "global.icon_path", expand_user( ICONFILE_PATH ) );
@@ -37,7 +39,7 @@ ConfigManager::ConfigManager( )
     configTree_.put( "global.show_user_face", false );
 
     // Check if config file exists. If yes then populate the map.
-    if( boost::filesystem::exists( configFile_ ) )
+    if( boost::filesystem::exists( config_file_ ) )
     {
         // If parsing fails then delete the file.
         try
@@ -47,18 +49,28 @@ ConfigManager::ConfigManager( )
         catch( ... )
         {
             // delete the file.
-            LOG_DEBUG << "Removing badly formatted config file " << configFile_;
-            boost::filesystem::remove( configFile_ );
+            LOG_WARNING << "Removing badly formatted config file " << config_file_;
+            boost::filesystem::remove( config_file_ );
             writeConfigFile( );
         }
     }
     else
     {
-        LOG_DEBUG << "Writing config file to " << configFile_;
+        LOG_INFO << "Writing config file to " << config_file_;
         writeConfigFile( );
     }
 }
 
+void ConfigManager::initialize( )
+{
+    if( ! bfs::exists( config_file_ ) )
+    {
+        auto res = bfs::create_directories( config_file_.parent_path() );
+        LOG_DEBUG << "Created " << config_file_.parent_path() << "? " << res;
+    }
+
+
+}
 
 ConfigManager::~ConfigManager( )
 {
@@ -107,14 +119,14 @@ void ConfigManager::setBlinkThreshold( double blinkratePerMinute )
 /* ----------------------------------------------------------------------------*/
 void ConfigManager::writeConfigFile( )
 {
-    LOG_DEBUG << "Writing to config file " << configFile_;
-    boost::property_tree::write_ini( configFile_, configTree_ );
+    LOG_DEBUG << "Writing to config file " << config_file_;
+    boost::property_tree::write_ini( config_file_.c_str(), configTree_ );
 }
 
 void ConfigManager::readConfigFile( )
 {
-    LOG_DEBUG << "Reading config file " << configFile_;
-    boost::property_tree::read_ini( configFile_, configTree_ );
+    LOG_DEBUG << "Reading config file " << config_file_;
+    boost::property_tree::read_ini( config_file_.c_str(), configTree_ );
 }
 
 const string ConfigManager::getIconpath( )

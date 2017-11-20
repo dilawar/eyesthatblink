@@ -35,9 +35,6 @@ int main( int argc, char* argv[] )
 {
     // No log should be written to stdout.
     boost::filesystem::path logpath( expand_user( LOG_FILE_PATH ) );
-    if( ! boost::filesystem::exists( logpath ) )
-        boost::filesystem::create_directory( logpath.parent_path( ) );
-
     static plog::RollingFileAppender<plog::CsvFormatter> 
         fileAppender( logpath.c_str( ), 8000, 3 );
 

@@ -27,13 +27,15 @@
 
 using namespace std;
 
-namespace boostfs = boost::filesystem;
+namespace bfs = boost::filesystem;
 
 class ConfigManager
 {
     public:
         ConfigManager();
         ~ConfigManager();
+
+        void initialize( );
 
         double getBlinkThreshold( void );
 
@@ -65,7 +67,7 @@ class ConfigManager
     private:
 
         // Config.
-        string configFile_;
+        bfs::path config_file_;
         boost::property_tree::ptree configTree_;
 };
 

@@ -26,6 +26,8 @@
 
 #include <iostream>
 #include <ctime>
+#include <thread>
+#include <chrono>
 
 using namespace std;
 
@@ -47,7 +49,8 @@ bool callback( int arg  )
     auto t0 = std::clock( );
     process_frame( );
     auto t1 = clock( );
-    time_to_process_one_frame_ = 1000.0 * ( t1 - t0 ) * CLOCKS_PER_SEC;
+    time_to_process_one_frame_ = 1000.0 * ( t1 - t0 ) / CLOCKS_PER_SEC;
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     return true;
 }
 

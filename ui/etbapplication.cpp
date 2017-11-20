@@ -32,13 +32,13 @@ ETBApplication::ETBApplication()
 #endif 
 {
     try {
-    // Load default values.
-    show_user_face_ = config_manager_.getValue<bool>( 
-            "global.show_user_face" );
-    user_has_small_eyes_ = config_manager_.getValue<bool>( 
-            "global.user_has_small_eyes" );
-    user_wearning_glasses_ = config_manager_.getValue<bool>( 
-            "global.user_wearning_glasses" ); 
+        // Load default values.
+        show_user_face_ = config_manager_.getValue<bool>( 
+                "global.show_user_face" );
+        user_has_small_eyes_ = config_manager_.getValue<bool>( 
+                "global.user_has_small_eyes" );
+        user_wearning_glasses_ = config_manager_.getValue<bool>( 
+                "global.user_wearning_glasses" ); 
     } catch( ... ) {
         LOG_INFO << "Failed to load configuration values";
         show_user_face_ = true;
@@ -58,7 +58,7 @@ Glib::RefPtr<ETBApplication> ETBApplication::create()
     return Glib::RefPtr<ETBApplication>( new ETBApplication() );
 }
 
-void ETBApplication::toggleSmallEyeOption( )
+void ETBApplication::setSmallEyeOption( )
 {
     bool value = smallEye.get_active( );
     config_manager_.setValue<bool>( "global.user_has_small_eyes", value );
@@ -67,7 +67,7 @@ void ETBApplication::toggleSmallEyeOption( )
 }
 
 
-void ETBApplication::toggleEyeGlassOption( )
+void ETBApplication::setEyeGlassOption( )
 {
     bool value = glasses.get_active( );
     LOG_INFO << "Setting 'user wearing glasses?' to " << value;
@@ -83,7 +83,7 @@ void ETBApplication::toggleEyeGlassOption( )
  * @Param menuitem
  */
 /* ----------------------------------------------------------------------------*/
-void ETBApplication::toggleShowUserFace( )
+void ETBApplication::setShowUserFace( )
 {
     LOG_INFO << "Toggling show user face ";
     bool val = ! show_user_face_;
@@ -154,13 +154,13 @@ void ETBApplication::create_window()
     showUserFace.set_label( "Show my face" );
     showUserFace.set_active( config_manager_.getValue<bool>( "global.show_user_face" ) );
     showUserFace.signal_toggled( ).connect( 
-            sigc::mem_fun( *this, &ETBApplication::toggleShowUserFace )
+            sigc::mem_fun( *this, &ETBApplication::setShowUserFace )
             );
     showUserFace.show( );
     table.attach( showUserFace, 0, 1, 0, 1 );
 
     smallEye.signal_toggled( ).connect( 
-            sigc::mem_fun( *this, &ETBApplication::toggleSmallEyeOption )
+            sigc::mem_fun( *this, &ETBApplication::setSmallEyeOption )
             );
     smallEye.show( );
     table.attach( smallEye, 0, 1, 1, 2 );
@@ -172,7 +172,7 @@ void ETBApplication::create_window()
             );
 
     glasses.signal_toggled( ).connect( 
-            sigc::mem_fun( *this, &ETBApplication::toggleEyeGlassOption )
+            sigc::mem_fun( *this, &ETBApplication::setEyeGlassOption )
             );
     glasses.show( );
     table.attach( glasses, 0, 1, 2, 3);

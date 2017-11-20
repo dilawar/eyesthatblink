@@ -21,7 +21,6 @@
 #include <future>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/numeric/conversion/cast.hpp>
-#include <boost/lexical_cast.hpp>
 
 #if USE_BOOST_PROCESS
 #include <boost/process.hpp>
@@ -70,7 +69,7 @@ ActionManager::ActionManager ()
     data_file_ = bfs::path( expand_user( DATA_FILE_PATH ) );
     config_file_ = bfs::path( expand_user( CONFIG_FILE_PATH ) );
 
-    std::cout << "|| Initializing Action Manager" << std::endl;
+    LOG_INFO << "|| Initializing Action Manager";
 
     initialize( );
 
@@ -83,21 +82,10 @@ ActionManager::ActionManager ()
 /* ----------------------------------------------------------------------------*/
 void ActionManager::initialize( void )
 {
-    // IF config_file_ or data_file_ directory is not found, create them.
-    bfs::path configDir = config_file_.parent_path( );
-    bfs::path dataDir = data_file_.parent_path( );
+    // initialize datafile here.
 
-    if( ! bfs::exists( configDir ) )
-    {
-        auto res = bfs::create_directories( configDir );
-        LOG_DEBUG << "Created " << configDir << "? " << res;
-    }
-
-    if( ! bfs::exists( dataDir ) )
-    {
-        auto res = bfs::create_directories( dataDir );
-        LOG_DEBUG << "Created " << dataDir << "? " << res;
-    }
+    if( ! bfs::exists( data_file_ ) )
+        auto res = bfs::create_directories( data_file_.parent_path( ) );
 
     if( bfs::exists( config_file_ ) )
     {
@@ -368,16 +356,17 @@ void ActionManager::linux_set_brightness( double frac )
     else
         brightness = frac;
 
-    if( frac >= 1.0 && brightness_ > 1.0 )
+    if( frac >= 1.0 && brightness_ >= 1.0 )
         return;
 
-    int bg = boost::numeric_cast<unsigned int>( ceil( 100 * brightness ) );
-
-    if( bg > 120 )
+    int bg = boost::numeric_cast<int>( 100 * brightness );
+    if( bg > 150 )
         return;
 
-    const char* perc = boost::lexical_cast<string>( bg ).c_str( );
-
+    assert( bg > 0 );
+    stringstream ss;
+    ss << bg;
+    const char* perc = ss.str( ).c_str( );
     LOG_DEBUG << "XBACKLIGHT Setting brightness to " << perc;
     std::vector<const char*> args = { "xbacklight", "-set", perc };
 
@@ -386,5 +375,5 @@ void ActionManager::linux_set_brightness( double frac )
             );
 
     // Now set the brightness
-    brightness_ = brightness;
+    brightness_ = max( brightness, 1.0 );
 }

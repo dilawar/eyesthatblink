@@ -60,9 +60,9 @@ private:
     void on_action_quit();
     void on_action_print(const Glib::VariantBase& parameter);
 
-    void toggleShowUserFace( );
-    void toggleEyeGlassOption( );
-    void toggleSmallEyeOption( );
+    void setShowUserFace( );
+    void setEyeGlassOption( );
+    void setSmallEyeOption( );
 
     void setBlinkThresholdValue( );
 
