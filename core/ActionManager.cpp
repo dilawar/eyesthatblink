@@ -373,6 +373,9 @@ void ActionManager::linux_set_brightness( double frac )
 
     int bg = boost::numeric_cast<unsigned int>( ceil( 100 * brightness ) );
 
+    if( bg > 120 )
+        return;
+
     const char* perc = boost::lexical_cast<string>( bg ).c_str( );
 
     LOG_DEBUG << "XBACKLIGHT Setting brightness to " << perc;
