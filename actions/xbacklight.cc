@@ -128,14 +128,14 @@ xbacklight_main (int argc, std::vector<const char*> args )
     int	    total_time = 200;	/* ms */
     int	    steps = 20;
 
-    xcb_connection_t *conn;
-    xcb_generic_error_t *error;
+    static xcb_connection_t *conn = NULL;
+    static xcb_generic_error_t *error;
 
-    xcb_randr_query_version_cookie_t ver_cookie;
-    xcb_randr_query_version_reply_t *ver_reply;
+    static xcb_randr_query_version_cookie_t ver_cookie;
+    static xcb_randr_query_version_reply_t *ver_reply;
 
-    xcb_intern_atom_cookie_t backlight_cookie[2];
-    xcb_intern_atom_reply_t *backlight_reply;
+    static xcb_intern_atom_cookie_t backlight_cookie[2];
+    static xcb_intern_atom_reply_t *backlight_reply;
 
     xcb_screen_iterator_t iter;
 
@@ -218,7 +218,10 @@ xbacklight_main (int argc, std::vector<const char*> args )
 		program_name, argv[i]);
 	usage (1);
     }
-    conn = xcb_connect (dpy_name, NULL);
+
+    if( ! conn )
+        conn = xcb_connect (dpy_name, NULL);
+
     ver_cookie = xcb_randr_query_version (conn, 1, 2);
     ver_reply = xcb_randr_query_version_reply (conn, ver_cookie, &error);
     if (error != NULL || ver_reply == NULL) {
