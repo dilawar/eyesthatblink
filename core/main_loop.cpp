@@ -171,7 +171,12 @@ bool process_frame(  )
         cv::Mat face;
         double rescaleFactor = 480.0 / frame_.cols;
         cv::resize( frame_, frame_, cv::Size(0,0), rescaleFactor, rescaleFactor );
+
+#if 1
         face = find_face( frame_ );
+#else
+        face = frame_;
+#endif
 
         if( ! face.empty( ) )
         {
