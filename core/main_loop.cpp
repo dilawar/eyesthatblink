@@ -69,11 +69,7 @@ cv::Mat find_face( cv::Mat frame, int method = 1, bool show = false )
 
     cv::Mat face;
 
-    face_cascade.detectMultiScale( 
-            frame_gray, faces, 1.1, 2
-            , 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT
-            , cv::Size(10,10)
-            );
+    face_cascade.detectMultiScale( frame_gray, faces, 1.3, 10);
 
     if (faces.size() > 0)
     {
@@ -84,7 +80,7 @@ cv::Mat find_face( cv::Mat frame, int method = 1, bool show = false )
         away_ = true;
 
     auto t1 = std::chrono::system_clock::now( );
-    cout << "Time taken ms: " << diff_in_ms( t1, t0 ) << endl;
+    LOG_DEBUG << "Time taken ms: " << diff_in_ms( t1, t0 );
     return face;
 }
 
@@ -152,8 +148,8 @@ bool locate_pupil( const cv::Mat face )
         eye_rects_[ i ] =  eyeLoc;
     }
 
-    auto t1 = std::chrono::system_clock::now( );
-    cout << " EYES time taken " << diff_in_ms( t1,t0 ) << endl;
+    //auto t1 = std::chrono::system_clock::now( );
+    //cout << " EYES time taken " << diff_in_ms( t1,t0 ) << endl;
 
     // If eyes are smaller than 5 pixals each then reject.
     if( allR < 10 )
@@ -178,10 +174,10 @@ bool process_frame(  )
         // Resize the frame. Resizing the frame to half speeds up the whole
         // process.
         cv::Mat face;
-        double rescaleFactor = 480.0 / frame_.cols;
+        double rescaleFactor = 600.0 / frame_.cols;
         cv::resize( frame_, frame_, cv::Size(0,0), rescaleFactor, rescaleFactor );
 
-#if 0
+#if 1
         // Detecting pupil directly is enough.
         face = find_face( frame_ );
 #else
