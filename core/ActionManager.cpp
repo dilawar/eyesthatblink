@@ -368,8 +368,8 @@ void ActionManager::linux_set_brightness( double frac )
     ss << bg;
     const char* perc = ss.str( ).c_str( );
     LOG_DEBUG << "XBACKLIGHT Setting brightness to " << perc;
-    std::vector<const char*> args = { "xbacklight", "-set", perc };
 
+    std::vector<const char*> args = { "xbacklight", "-set", perc };
     std::async( std::launch::async
             , [args](){ xbacklight_main( 3, args ); }
             );

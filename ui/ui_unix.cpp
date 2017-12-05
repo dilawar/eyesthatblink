@@ -19,9 +19,9 @@
 #include "../core/main_loop.h"
 #include "../core/ConfigManager.h"
 #include "../actions/linux.h"
-#include "etbapplication.h"
+#include "../external/plog/include/plog/Log.h"
 
-#include "plog/Log.h"
+#include "etbapplication.h"
 #include <boost/filesystem.hpp>
 
 #include <iostream>
@@ -44,13 +44,29 @@ Glib::RefPtr<ETBApplication> pApp_ ;
 ETBApplication* pApp_;
 #endif
 
+
+static bool callback_started_ = false;
+
 bool callback( int arg  )
 {
-    auto t0 = std::clock( );
+    // If callback_started_ is still true that means previous call is not
+    // complete yet. Don't do anything till previous call returns.
+    if( callback_started_ )
+    {
+        cout << '|';
+        cout.flush( );
+        return true;
+    }
+
+    callback_started_ = true;
+    auto t0 = std::chrono::system_clock::now( );
     process_frame( );
-    auto t1 = clock( );
-    time_to_process_one_frame_ = 1000.0 * ( t1 - t0 ) / CLOCKS_PER_SEC;
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    auto t1 = std::chrono::system_clock::now( );
+    time_to_process_one_frame_ = diff_in_ms( t1, t0 );
+
+    std::this_thread::sleep_for(std::chrono::milliseconds( max(10, 100 - (int)time_to_process_one_frame_ ) ));
+    callback_started_ = false;
+
     return true;
 }
 
@@ -73,13 +89,10 @@ int unix_ui( int argc, char* argv[] )
     LOG_INFO << "Using icon path " << iconPath;
 
     // Add a callback function.
-    // Call this function every 1.5 times it takes to process one frame. This
-    // must not slow down the system. 
     sigc::slot<bool> loop_slot = sigc::bind( sigc::ptr_fun( callback ), 0 );
-    sigc::connection conn = Glib::signal_timeout().connect( 
-            loop_slot
-            , 1.5 * time_to_process_one_frame_ 
-            );
+
+    // Call every 100 ms and no earlier.
+    sigc::connection conn = Glib::signal_timeout().connect( loop_slot, 150 );
 
 #ifdef WITH_GTK2
     Gtk::Main initGui( argc, argv );
