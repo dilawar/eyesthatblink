@@ -41,8 +41,8 @@ extern cv::VideoCapture cap_;
 
 auto t_ = std::chrono::system_clock::now( );
 
-cv::String face_cascade_name = config_manager_.getCascadeFile( "haarcascade_frontalface_default.xml");
-//cv::String face_cascade_name = config_manager_.getCascadeFile( "haarcascade_frontalface_alt2.xml");
+//cv::String face_cascade_name = config_manager_.getCascadeFile( "haarcascade_frontalface_default.xml");
+cv::String face_cascade_name = config_manager_.getCascadeFile( "haarcascade_frontalface_alt2.xml");
 cv::String eye_cascade_name = config_manager_.getCascadeFile( "haarcascade_eye.xml" );
 
 cv::CascadeClassifier face_cascade( face_cascade_name );
