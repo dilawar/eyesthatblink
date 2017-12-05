@@ -68,7 +68,7 @@ cv::Mat find_face( cv::Mat frame, int method = 1, bool show = false )
 
     cv::Mat face;
 
-    face_cascade.detectMultiScale( frame_gray, faces, 1.3, 10);
+    face_cascade.detectMultiScale( frame_gray, faces, 1.2, 10);
 
     if (faces.size() > 0)
     {
