@@ -19,11 +19,7 @@
 
 #include <gtkmm.h>
 
-#ifdef WITH_GTK3
 class ETBWindow: public Gtk::ApplicationWindow
-#elif WITH_GTK2
-class ETBWindow : public Gtk::Window
-#endif
 {
 
 public:

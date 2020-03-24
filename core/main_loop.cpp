@@ -242,7 +242,7 @@ bool process_frame(  )
 /* ----------------------------------------------------------------------------*/
 void init_camera( )
 {
-    cap_ = cv::VideoCapture( 0 );
+    cap_ = cv::VideoCapture(0, cv::CAP_V4L);
     if( ! cap_.isOpened( ) )
     {
         LOG_ERROR << "Failed to open default camera. Existing ... " << endl;

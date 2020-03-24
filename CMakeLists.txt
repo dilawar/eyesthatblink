@@ -1,25 +1,18 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1)
 cmake_policy(SET CMP0048 NEW)
-project( EyesThatBlink VERSION 1.0.0)
+project( EyesThatBlink VERSION 1.0.1)
+
 add_definitions( --std=c++11 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-# Enable/disable debug.
-set(WITH_DEBUG ON)
-if(WITH_DEBUG)
-    set( CMAKE_BUILD_TYPE Debug )
-else()
-    set( CMAKE_BUILD_TYPE Release )
-endif()
-
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/external/plog/include )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/external/pstreams-1.0.1/)
 
-set(USE_BOOST_PROCESS OFF)
-if(USE_BOOST_PROCESS)
-    add_definitions( -DUSE_BOOST_PROCESS )
-    include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/external/cpp-subprocess/)
-endif( )
+# set(USE_BOOST_PROCESS OFF)
+# if(USE_BOOST_PROCESS)
+#     add_definitions( -DUSE_BOOST_PROCESS )
+#     include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/external/cpp-subprocess/)
+# endif( )
 
 find_package(OpenCV REQUIRED)
 
@@ -32,7 +25,6 @@ if(UNIX)
     pkg_check_modules(LIBNOTIFY libnotify REQUIRED)
     list(APPEND OTHER_LIBS ${LIBNOTIFY_LIBRARIES})
     pkg_check_modules(GTKMM gtkmm-3.0 REQUIRED)
-    add_definitions(-DWITH_GTK3)
     include_directories(${GTKMM_INCLUDE_DIRS})
 endif( )
 

@@ -34,15 +34,15 @@ ETBApplication::ETBApplication() : Gtk::Application("org.dilawar.application")
         user_has_small_eyes_ = config_manager_.getValue<bool>( 
                 "global.user_has_small_eyes" );
         user_wearning_glasses_ = config_manager_.getValue<bool>( 
-                "global.user_wearning_glasses" ); 
-    } catch( ... ) {
-        LOG_INFO << "Failed to load configuration values";
+                "global.user_wearning_glasses"); 
+    } catch( std::exception& e ) {
+        LOG_INFO << "Failed to load configuration values" <<  e.what() << endl;
         show_user_face_ = true;
         user_has_small_eyes_ = false;
         user_wearning_glasses_ = false;
     }
 
-    Glib::set_application_name("Eyes That Blink");
+    // Glib::set_application_name("Eyes That Blink");
 }
 
 ETBApplication* ETBApplication::create()
@@ -85,21 +85,16 @@ void ETBApplication::setShowUserFace( )
 
 void ETBApplication::on_startup()
 {
-#ifdef WITH_GTK3
     //Call the base class's implementation:
     Gtk::Application::on_startup();
 
     add_action("quit",
-               sigc::mem_fun(*this, &ETBApplication::on_action_quit) );
+               sigc::mem_fun(*this, &ETBApplication::on_action_quit));
 
     auto app_menu = Gio::Menu::create();
     app_menu->append("_Quit", "app.quit");
 
     set_app_menu(app_menu);
-#elif WITH_GTK2
-    LOG_DEBUG << "Using GTK2. Doing nothing here";
-#endif
-
 }
 
 void ETBApplication::setBlinkThresholdValue( )
@@ -118,7 +113,6 @@ void ETBApplication::setBlinkThresholdValue( )
 /* ----------------------------------------------------------------------------*/
 void ETBApplication::create_window()
 {
-#if WITH_GTK3
     window.set_default_size(300, 200);
     window.signal_hide().connect(
             sigc::bind( 
@@ -126,15 +120,6 @@ void ETBApplication::create_window()
                 , &window
                 )
             );
-#elif WITH_GTK2
-    set_default_size(300, 200);
-    signal_hide().connect(
-            sigc::bind( 
-                sigc::mem_fun(*this, &ETBApplication::on_window_hide)
-                , this
-                )
-            );
-#endif
     // Table.
     table.resize( 8, 1 );
 
@@ -214,13 +199,8 @@ void ETBApplication::on_activate()
 
 void ETBApplication::on_action_quit()
 {
-    
     LOG_DEBUG << "Closing application";
-
     close_camera( );
-
-#ifdef WITH_GTK3
-    quit(); // Not really necessary, when Gtk::Widget::hide() is called.
 
     // Gio::Application::quit() will make Gio::Application::run() return,
     // but it's a crude way of ending the program. The window is not removed
@@ -232,9 +212,9 @@ void ETBApplication::on_action_quit()
     auto windows = get_windows();
     if (windows.size() > 0)
         windows[0]->hide(); // In this simple case, we know there is only one window.
-#elif WITH_GTK2
-    Gtk::Main::quit( );
-#endif
+
+    quit(); // Not really necessary, when Gtk::Widget::hide() is called.
+
 }
 
 void ETBApplication::on_action_print(const Glib::VariantBase& parameter)
@@ -254,7 +234,6 @@ void ETBApplication::on_action_print(const Glib::VariantBase& parameter)
 /* ----------------------------------------------------------------------------*/
 bool ETBApplication::show_user_face( const cv::Mat& gray )
 {
-
     if( ! show_user_face_ )
         show_icon( );
 

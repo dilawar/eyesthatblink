@@ -41,7 +41,6 @@ extern ConfigManager config_manager_;
 
 unique_ptr<ETBApplication> pApp_;
 
-
 static bool callback_started_ = false;
 
 bool callback( int arg  )
@@ -89,10 +88,11 @@ int unix_ui( int argc, char* argv[] )
     sigc::slot<bool> loop_slot = sigc::bind( sigc::ptr_fun( callback ), 0 );
 
     // Call every 100 ms and no earlier.
-    sigc::connection conn = Glib::signal_timeout().connect( loop_slot, 150 );
+    // sigc::connection conn = Glib::signal_timeout().connect( loop_slot, 150 );
 
     pApp_.reset(ETBApplication::create());
-    Gtk::Main::run(pApp_->getWindow());
+
+    pApp_->run(pApp_->getWindow());
 
     return 1;
 
