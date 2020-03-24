@@ -20,38 +20,17 @@
 #include "ui_unix.h"
 #include <gtkmm.h>
 
-#ifdef WITH_GTK3
 class ETBApplication: public Gtk::Application
-#elif WITH_GTK2
-class ETBApplication: public Gtk::Window 
-#endif
 {
 
-#ifdef WITH_GTK3
 protected:
     ETBApplication();
-#elif WITH_GTK2
-public:
-    ETBApplication( );
-#endif
 
 public:
-    static Glib::RefPtr<ETBApplication> create();
+    static ETBApplication* create();
     bool show_user_face( const cv::Mat& gray );
 
     bool show_icon( );
-
-protected:
-
-#ifdef WITH_GTK3
-    void on_activate() override;
-    void on_startup() override;
-#else
-    void on_startup( );
-    void on_activate( );
-#endif
-
-private:
 
     void create_window();
 
@@ -60,17 +39,22 @@ private:
     void on_action_quit();
     void on_action_print(const Glib::VariantBase& parameter);
 
-    void setShowUserFace( );
-    void setEyeGlassOption( );
-    void setSmallEyeOption( );
+    void setShowUserFace();
+    void setEyeGlassOption();
+    void setSmallEyeOption();
 
-    void setBlinkThresholdValue( );
+    void setBlinkThresholdValue();
+
+    Gtk::Window& getWindow();
+
+protected:
+
+    void on_activate() override;
+    void on_startup() override;
+
 
 private:
-
-#ifdef WITH_GTK3
     Gtk::Window window;
-#endif
     Gtk::CheckButton showUserFace;
     Gtk::Image image;
     Gtk::VBox vbox;

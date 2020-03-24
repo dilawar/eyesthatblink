@@ -22,56 +22,18 @@ if(USE_BOOST_PROCESS)
 endif( )
 
 find_package(OpenCV REQUIRED)
-if(OpenCV_FOUND)
-    set(WITH_LOCAL_OPENCV OFF)
-else( )
-set( WITH_LOCAL_OPENCV ON )
-endif( )
 
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 message( STATUS "OpenCV libraries ${OpenCV_LIBRARIES}" )
 
 # Check for pkg-config modules. We need to link with their libs.
 find_package( PkgConfig REQUIRED )
-set( OTHER_LIBS "" )
-if( WITH_LOCAL_OPENCV )
-    if( UNIX AND NOT APPLE )
-        pkg_check_modules( GTK3 gtk+-3.0 )
-        list(APPEND OTHER_LIBS ${GTK3_LIBRARIES})
-        pkg_check_modules( GLIB2 glib-2.0 )
-        list(APPEND OTHER_LIBS ${GLIB2_LIBRARIES})
-        pkg_check_modules( LIBPNG libpng )
-        list(APPEND OTHER_LIBS ${LIBPNG_LIBRARIES})
-        pkg_check_modules( V4L2 libv4l2 )
-        list(APPEND OTHER_LIBS ${V4L2_LIBRARIES})
-        pkg_check_modules( V4L1 libv4l1 )
-        list(APPEND OTHER_LIBS ${V4L1_LIBRARIES})
-        pkg_check_modules( LIBDC1394 libdc1394-2 )
-        list(APPEND OTHER_LIBS ${LIBDC1394_LIBRARIES})
-        pkg_check_modules( LIBWEBP libwebp )
-        list(APPEND OTHER_LIBS ${LIBWEBP_LIBRARIES})
-    else(APPLE)
-        pkg_check_modules( LIBPNG libpng )
-    endif( )
-
-    # Other libs.
-    find_package( ZLIB )
-    # libdl 
-    list(APPEND OTHER_LIBS dl )
-endif( )
-
 if(UNIX)
-    pkg_check_modules( LIBNOTIFY libnotify REQUIRED )
+    pkg_check_modules(LIBNOTIFY libnotify REQUIRED)
     list(APPEND OTHER_LIBS ${LIBNOTIFY_LIBRARIES})
-
-    if(NOT WITH_LOCAL_OPENCV)
-        pkg_check_modules( GTKMM gtkmm-2.4 REQUIRED )
-        add_definitions( -DWITH_GTK2 )
-    else( )
-        pkg_check_modules( GTKMM gtkmm-3.0 REQUIRED )
-        add_definitions( -DWITH_GTK3 )
-    endif( )
-    include_directories( ${GTKMM_INCLUDE_DIRS} )
+    pkg_check_modules(GTKMM gtkmm-3.0 REQUIRED)
+    add_definitions(-DWITH_GTK3)
+    include_directories(${GTKMM_INCLUDE_DIRS})
 endif( )
 
 # pthreads
@@ -128,13 +90,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/actions )
 
 
 # Add target and dependencies.
-add_executable( eyesthatblink 
-    WIN32 MACOSX_BUNDLE main.cpp  ${ICON_FILE_48} )
-
-if(WITH_LOCAL_OPENCV)
-    # Build opencv before eyesthatblink only if required.
-    add_dependencies( eyesthatblink opencv_local )
-endif()
+add_executable( eyesthatblink WIN32 MACOSX_BUNDLE main.cpp  ${ICON_FILE_48} )
 
 target_link_libraries( eyesthatblink core ui xbacklight)
 

@@ -28,6 +28,7 @@
 #include <ctime>
 #include <thread>
 #include <chrono>
+#include <memory>
 
 using namespace std;
 
@@ -38,11 +39,7 @@ extern double time_to_process_one_frame_;
 
 extern ConfigManager config_manager_;
 
-#ifdef WITH_GTK3
-Glib::RefPtr<ETBApplication> pApp_ ;
-#elif WITH_GTK2
-ETBApplication* pApp_;
-#endif
+unique_ptr<ETBApplication> pApp_;
 
 
 static bool callback_started_ = false;
@@ -94,18 +91,8 @@ int unix_ui( int argc, char* argv[] )
     // Call every 100 ms and no earlier.
     sigc::connection conn = Glib::signal_timeout().connect( loop_slot, 150 );
 
-#ifdef WITH_GTK2
-    Gtk::Main initGui( argc, argv );
-#endif
-
-
-#ifdef WITH_GTK3
-    pApp_ = ETBApplication::create( );
-    Gtk::Main::run( *pApp_ );
-#elif WITH_GTK2
-    pApp_ = new ETBApplication( );
-    Gtk::Main::run( *pApp_ );
-#endif
+    pApp_.reset(ETBApplication::create());
+    Gtk::Main::run(pApp_->getWindow());
 
     return 1;
 

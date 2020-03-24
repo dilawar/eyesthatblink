@@ -25,11 +25,7 @@ namespace bfs = boost::filesystem;
 
 extern ConfigManager config_manager_;
 
-ETBApplication::ETBApplication()
-#ifdef WITH_GTK3
-    : Gtk::Application("org.dilawar.application")
-#elif WITH_GTK2
-#endif 
+ETBApplication::ETBApplication() : Gtk::Application("org.dilawar.application")
 {
     try {
         // Load default values.
@@ -46,16 +42,12 @@ ETBApplication::ETBApplication()
         user_wearning_glasses_ = false;
     }
 
-#ifdef WITH_GTK3
     Glib::set_application_name("Eyes That Blink");
-#elif WITH_GTK2
-    create_window( );
-#endif
 }
 
-Glib::RefPtr<ETBApplication> ETBApplication::create()
+ETBApplication* ETBApplication::create()
 {
-    return Glib::RefPtr<ETBApplication>( new ETBApplication() );
+    return new ETBApplication();
 }
 
 void ETBApplication::setSmallEyeOption( )
@@ -195,32 +187,19 @@ void ETBApplication::create_window()
     table.attach( image, 0, 1, 4, 7);
     image.show( );
 
-#if WITH_GTK3
     window.add( table );
-#elif WITH_GTK2
-    add(table);
-#endif
     table.show( );
 
-#ifdef WITH_GTK3
     // Make sure that the application runs for as long this window is 
     add_window(window);
     window.show( );
-#endif
-    show( );
 }
 
 void ETBApplication::on_window_hide(Gtk::Window* window)
 {
     LOG_DEBUG << "Hiding window";
-    delete window;
     close_camera( );
-
-#ifdef WITH_GTK3
-    quit( );
-#elif WITH_GTK2
-    Gtk::Main::quit( );
-#endif
+    quit();
 }
 
 void ETBApplication::on_activate()
@@ -307,4 +286,9 @@ bool ETBApplication::show_icon( )
         icon_is_set_ = true;
     }
     return true;
+}
+
+Gtk::Window& ETBApplication::getWindow()
+{
+    return window;
 }
