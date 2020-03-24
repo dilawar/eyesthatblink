@@ -88,7 +88,7 @@ int unix_ui( int argc, char* argv[] )
     sigc::slot<bool> loop_slot = sigc::bind( sigc::ptr_fun( callback ), 0 );
 
     // Call every 100 ms and no earlier.
-    // sigc::connection conn = Glib::signal_timeout().connect( loop_slot, 150 );
+    sigc::connection conn = Glib::signal_timeout().connect( loop_slot, 150 );
 
     pApp_.reset(ETBApplication::create());
 
