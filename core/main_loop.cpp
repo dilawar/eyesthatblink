@@ -64,7 +64,7 @@ cv::Mat find_face( cv::Mat frame, int method = 1, bool show = false )
     std::vector<cv::Rect> faces;
 
     cv::Mat frame_gray;
-    cvtColor( frame, frame_gray, CV_BGRA2GRAY );
+    cvtColor( frame, frame_gray, cv::COLOR_BGRA2GRAY );
 
     cv::Mat face;
 
