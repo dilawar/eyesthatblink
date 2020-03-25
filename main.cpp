@@ -23,7 +23,7 @@
 #include "core/main_loop.h"
 #include "ui/ui_unix.h"
 
-#include "plog/Log.h"
+#include "../external/plog/include/plog/Log.h"
 
 using namespace std;
 
@@ -36,7 +36,8 @@ extern unique_ptr<ConfigManager> pConfigManager_;
  */
 int main(int argc, char* argv[])
 {
-    plog::init(plog::debug);
+    static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;
+    plog::init(plog::debug, &consoleAppender);
 
     // Declare the supported options.
     po::options_description desc("Allowed options");

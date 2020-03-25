@@ -26,7 +26,7 @@ void close_camera( );
 
 bool process_frame(  );
 
-bool locate_pupil( const cv::Mat face );
+bool locate_pupil( const cv::Mat face, bool show=false);
 
 void reload_eye_cascade( );
 

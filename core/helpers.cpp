@@ -13,12 +13,12 @@
 #include "opencv2/objdetect/objdetect.hpp"
 
 #include <boost/algorithm/string.hpp>
-#include <boost/regex.hpp>
 
 #include <chrono>
 #include <iostream>
 #include <queue>
 #include <thread>
+#include <regex>
 
 #include <ctime>
 #include <iomanip>
@@ -174,15 +174,15 @@ string spawn(const string &command)
 vector<string> find_display()
 {
     const string out = spawn("xrandr -q");
-    boost::smatch what;
-    boost::regex disp_regex("^(\\S+)\\s+connected");
+    std::smatch what;
+    std::regex disp_regex("^(\\S+)\\s+connected");
     vector<string> res;
 
     string line;
     istringstream f(out);
 
     while (std::getline(f, line)) {
-        if (boost::regex_search(line, what, disp_regex)) res.push_back(what[1]);
+        if (std::regex_search(line, what, disp_regex)) res.push_back(what[1]);
     }
     return res;
 }

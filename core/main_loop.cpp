@@ -119,13 +119,19 @@ void reload_eye_cascade()
  *
  * @param face
  */
-bool locate_pupil(const cv::Mat face)
+bool locate_pupil(const cv::Mat face, bool show)
 {
-    if (eyeCascade_.empty()) return false;
+    if (eyeCascade_.empty())
+    {
+        cerr << "Warning: Eye cascade is not loaded. Can't detect eyes." << endl;
+        reload_eye_cascade();
+        return false;
+    }
 
     auto t0 = std::chrono::system_clock::now();
     vector<cv::Rect> eyes;
     eyeCascade_.detectMultiScale(face, eyes, 1.1, 10);
+
     if (eyes.size() < 2) return false;
 
     // Now sort them so left eye is always on the left.
@@ -167,28 +173,25 @@ bool process_frame()
 {
     cap_.read(frame_);
 
-
     if (frame_.empty()) return false;
 
     // Resize the frame. Resizing the frame to half speeds up the whole
     // process.
     cv::Mat face;
-    double rescaleFactor = 600.0 / frame_.cols;
-    cv::resize(frame_, frame_, cv::Size(0, 0), rescaleFactor, rescaleFactor);
+    double rescaleFactor = 800.0 / frame_.cols;
+    // cv::resize(frame_, frame_, cv::Size(0, 0), rescaleFactor, rescaleFactor);
 
-#if 1
-    // Detecting pupil directly is enough.
+#if 0
     face = find_face(frame_);
-#else
-    face = frame_;
-#endif
     if (face.empty()) {
         pActionManager_->insert_state(t_, AWAY);
         LOG_INFO << "Empty frame";
         return false;
     }
-
-    crop_face(face);
+#else
+    // Detecting pupil directly is enough.
+    face = frame_;
+#endif
     preprocess(face);
 
     // cv::imshow("win", face);
@@ -209,16 +212,21 @@ bool process_frame()
 
     // Show eyes only in debug mode.
     if (pConfigManager_->getValue<bool>("global.show_user_face")) {
-        string msg = std::to_string(pActionManager_->n_blinks_);
-        msg += "," + std::to_string(pActionManager_->running_avg_activity_);
-        msg += "," + std::to_string(
-                         pActionManager_->running_avg_activity_in_interval_);
+        static stringstream msg;
+        msg.precision(3);
+        msg.str("");
+        msg << std::fixed << pActionManager_->n_blinks_ 
+            << "|" << pActionManager_->running_avg_activity_
+            << "|" << pActionManager_->running_avg_activity_in_interval_
+            ;
+
+        cout << " -- " << msg.str() << endl;
 
         // Show the face with rectangle drawn on them.
         cv::rectangle(face, eye_rects_[0], 255, 1);
         cv::rectangle(face, eye_rects_[1], 255, 1);
-        cv::putText(face, msg, cv::Point(10, 10), cv::FONT_HERSHEY_SIMPLEX, 0.3,
-                    255);
+        cv::putText(face, msg.str(), cv::Point(10, 10), cv::FONT_HERSHEY_SIMPLEX
+                , 1, 255);
 
         // Show user face in UI.
         LOG_INFO << "Showing user face." << endl;
@@ -227,8 +235,6 @@ bool process_frame()
     else {
         show_icon();
     }
-
-    show_user_face(face);
 
     return true;
 }

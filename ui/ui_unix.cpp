@@ -40,26 +40,25 @@ unique_ptr<ETBApplication> pApp_;
 
 extern unique_ptr<ConfigManager> pConfigManager_;
 
-static bool callback_started_ = false;
 
-bool callback(int arg)
+bool fetch_and_process(int arg)
 {
     // If callback_started_ is still true that means previous call is not
     // complete yet. Don't do anything till previous call returns.
-    if (callback_started_) {
-        cout << 'x'; cout.flush();
+    static bool wait = false;
+    if (wait) {
         return true;
     }
 
-    callback_started_ = true;
-    auto t0 = std::chrono::system_clock::now();
+    wait = true;
+    //auto t0 = std::chrono::system_clock::now();
     process_frame();
-    auto t1 = std::chrono::system_clock::now();
-    time_to_process_one_frame_ = diff_in_ms(t1, t0);
+    //auto t1 = std::chrono::system_clock::now();
+    //time_to_process_one_frame_ = diff_in_ms(t1, t0);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(
-        max(10, 100 - (int)time_to_process_one_frame_)));
-    callback_started_ = false;
+    // std::this_thread::sleep_for(std::chrono::milliseconds(
+    //     max(10, 100 - (int)time_to_process_one_frame_)));
+    wait = false;
 
     return true;
 }
@@ -78,8 +77,8 @@ bool callback(int arg)
 int unix_ui()
 {
     // Add a callback function.
-    sigc::slot<bool> slot = sigc::bind(sigc::ptr_fun(callback), 0);
-    Glib::signal_timeout().connect(slot, 200);
+    sigc::slot<bool> slot = sigc::bind(sigc::ptr_fun(fetch_and_process), 0);
+    Glib::signal_timeout().connect(slot, 100);
 
     pApp_.reset(ETBApplication::create());
     pApp_->run(pApp_->getWindow());
