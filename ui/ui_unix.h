@@ -16,11 +16,11 @@
 #ifndef UI_UNIX_H
 #define UI_UNIX_H
 
-#include "ui.h"
-#include "gtkmm.h"
-#include "../core/main_loop.h"
+#include <gtkmm.h>
 #include <opencv2/opencv.hpp>
 
-int unix_ui( int argc, char* argv[] );
+#include "ui.h"
+
+int unix_ui();
 
 #endif /* end of include guard: UI_UNIX_H */

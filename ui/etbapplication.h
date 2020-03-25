@@ -56,10 +56,10 @@ protected:
 private:
     Gtk::Window window;
     Gtk::CheckButton showUserFace;
-    Gtk::Image image;
+    Gtk::Image image_;
     Gtk::VBox vbox;
 
-    Gtk::Table table;
+    Gtk::Table table_;
 
     Gtk::CheckButton smallEye;
     Gtk::CheckButton glasses;

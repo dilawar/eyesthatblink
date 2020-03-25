@@ -33,10 +33,11 @@
 #endif
 
 #include "globals.h"
-
-extern ConfigManager config_manager_;
+#include "plog/Log.h"
 
 using namespace std;
+
+extern unique_ptr<ConfigManager> pConfigManager_;
 
 time_t getCurrentTime( )
 {
@@ -54,7 +55,7 @@ time_t getCurrentTime( )
  * Description:  constructor
  *--------------------------------------------------------------------------------------
  */
-ActionManager::ActionManager ()
+ActionManager::ActionManager()
 {
     n_blinks_ = 0;
     blink_rate_ = 0.0;
@@ -66,8 +67,8 @@ ActionManager::ActionManager ()
     blinks_.push_back( make_pair( start_time_,current_time_));
 
     // Initialize data file.
-    data_file_ = bfs::path( expand_user( DATA_FILE_PATH ) );
-    config_file_ = bfs::path( expand_user( CONFIG_FILE_PATH ) );
+    data_file_ = bfs::path( expand_user( DATA_FILEPATH ) );
+    config_file_ = bfs::path( expand_user( CONFIG_FILEPATH ) );
 
     LOG_INFO << "|| Initializing Action Manager";
 
@@ -98,7 +99,7 @@ void ActionManager::initialize( void )
         modification_times_[1] = getCurrentTime( );
     }
 
-    cout << "Blink threshold is " << config_manager_.getBlinkThreshold( ) << endl;
+    cout << "Blink threshold is " << pConfigManager_->getBlinkThreshold( ) << endl;
     brightness_ = 0.0;
     displays_ = find_display( );
     if( displays_.size( ) > 0 )
@@ -267,21 +268,21 @@ void ActionManager::insert_state( const time_type_& t, const status_t_ st )
         return;
 
     // Compare so  we can alert the user.
-    if( running_avg_activity_in_interval_ < config_manager_.getBlinkThreshold( ) )
+    if( running_avg_activity_in_interval_ < pConfigManager_->getBlinkThreshold( ) )
     {
         if( diff_in_ms( t, last_nofified_on ) > 10000 )
         {
             LOG_INFO << "Alerting user. Threshold " 
-                     << config_manager_.getBlinkThreshold( );
+                     << pConfigManager_->getBlinkThreshold( );
 
             alert(  "You are not blinking enough" );
             last_nofified_on = t;
-            linux_set_brightness( );
+            // linux_set_brightness( );
         }
     }
     else
     {
-        linux_set_brightness( );
+        // linux_set_brightness( );
     }
 }
 
@@ -335,7 +336,7 @@ void ActionManager::update_config_file( )
     {
         cout << "Update config file. " << endl;
         // And reload the config file.
-        config_manager_.readConfigFile( );
+        pConfigManager_->readConfigFile( );
 
         // To be sure lets not rewrite it.
         modification_times_[0] = modification_times_[1];
@@ -349,7 +350,7 @@ void ActionManager::linux_set_brightness( double frac )
     if( frac < 0.0 )
     {
         delta = max(0.0, 
-            running_avg_activity_in_interval_ - config_manager_.getBlinkThreshold( ) 
+            running_avg_activity_in_interval_ - pConfigManager_->getBlinkThreshold( ) 
             );
         brightness = 10 * delta + 0.5;
     }
@@ -367,7 +368,7 @@ void ActionManager::linux_set_brightness( double frac )
     stringstream ss;
     ss << bg;
     const char* perc = ss.str( ).c_str( );
-    LOG_DEBUG << "XBACKLIGHT Setting brightness to " << perc;
+    LOG_INFO << "XBACKLIGHT Setting brightness to " << perc;
 
     std::vector<const char*> args = { "xbacklight", "-set", perc };
     std::async( std::launch::async

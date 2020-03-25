@@ -1,5 +1,5 @@
 # Plog - portable, simple and extensible C++ logging library
-Pretty powerful logging library in about 1000 lines of code [![Build Status](https://travis-ci.org/SergiusTheBest/plog.svg?branch=master)](https://travis-ci.org/SergiusTheBest/plog) [![Build status](https://ci.appveyor.com/api/projects/status/rna5gwhqjb13wovr/branch/master?svg=true)](https://ci.appveyor.com/project/SergiusTheBest/plog/branch/master)
+Pretty powerful logging library in about 1000 lines of code [![Build Status](https://travis-ci.org/SergiusTheBest/plog.svg?branch=master)](https://travis-ci.org/SergiusTheBest/plog) [![Build status](https://ci.appveyor.com/api/projects/status/rna5gwhqjb13wovr/branch/master?svg=true)](https://ci.appveyor.com/project/SergiusTheBest/plog/branch/master) [![CircleCI](https://circleci.com/gh/SergiusTheBest/plog.svg?style=svg)](https://circleci.com/gh/SergiusTheBest/plog) [![Build Status](https://api.cirrus-ci.com/github/SergiusTheBest/plog.svg)](https://cirrus-ci.com/github/SergiusTheBest/plog)
 
 - [Introduction](#introduction)
   - [Hello log!](#hello-log)
@@ -23,7 +23,9 @@ Pretty powerful logging library in about 1000 lines of code [![Build Status](htt
   - [Record](#record)
   - [Formatter](#formatter)
     - [TxtFormatter](#txtformatter)
+    - [TxtFormatterUtcTime](#txtformatterutctime)
     - [CsvFormatter](#csvformatter)
+    - [CsvFormatterUtcTime](#csvformatterutctime)
     - [FuncMessageFormatter](#funcmessageformatter)
     - [MessageOnlyFormatter](#messageonlyformatter)
   - [Converter](#converter)
@@ -44,6 +46,8 @@ Pretty powerful logging library in about 1000 lines of code [![Build Status](htt
   - [Unicode](#unicode)
   - [Wide string support](#wide-string-support)
   - [Performance](#performance)
+  - [Printf style formatting](#printf-style-formatting)
+  - [LOG_XXX macro name clashes](#log_xxx-macro-name-clashes)
 - [Extending](#extending)
   - [Custom data type](#custom-data-type)
   - [Custom appender](#custom-appender)
@@ -59,20 +63,25 @@ Pretty powerful logging library in about 1000 lines of code [![Build Status](htt
 # Introduction
 
 ## Hello log!
-Plog is a C++ logging library that is designed to be as simple, small and flexible as possible. It is created as an alternative to existing large libraries and provides some unique features as [CSV log format]((#csvformatter)) and [automatic 'this' pointer capture](#automatic-this-pointer-capture).
+Plog is a C++ logging library that is designed to be as simple, small and flexible as possible. It is created as an alternative to existing large libraries and provides some unique features as [CSV log format]((#csvformatter)) and [wide string support](#wide-string-support).
 
 Here is a minimal hello log sample:
 
 ```cpp
-#include <plog/Log.h> // Step1: include the header.
+#include <plog/Log.h> // Step1: include the header
 
 int main()
 {
-    plog::init(plog::debug, "Hello.txt"); // Step2: initialize the logger.
+    plog::init(plog::debug, "Hello.txt"); // Step2: initialize the logger
 
-    // Step3: write log messages using a special macro. 
-    // There are several log macros, use the macro you liked the most.
+    // Step3: write log messages using a special macro
+    // There are several log macros, use the macro you liked the most
 
+    PLOGD << "Hello log!"; // short macro
+    PLOG_DEBUG << "Hello log!"; // long macro
+    PLOG(plog::debug) << "Hello log!"; // function-style macro
+    
+    // Also you can use LOG_XXX macro but it may clash with other logging libraries
     LOGD << "Hello log!"; // short macro
     LOG_DEBUG << "Hello log!"; // long macro
     LOG(plog::debug) << "Hello log!"; // function-style macro
@@ -94,9 +103,9 @@ And its output:
 - Easy to use
 - Headers only
 - No 3rd-party dependencies
-- Cross-platform: Windows, Linux, Mac OS X, Android (gcc, clang, msvc, mingw, mingw-w64, c++builder)
+- Cross-platform: Windows, Linux, FreeBSD, macOS, Android, RTEMS (gcc, clang, msvc, mingw, mingw-w64, icc, c++builder)
 - Thread and type safe
-- Formatters: [TXT](#txtformatter), [CSV](#csvformatter), [FuncMessage](#funcmessageformatter)
+- Formatters: [TXT](#txtformatter), [CSV](#csvformatter), [FuncMessage](#funcmessageformatter), [MessageOnly](#messageonlyformatter)
 - Appenders: [RollingFile](#rollingfileappender), [Console](#consoleappender), [ColorConsole](#colorconsoleappender), [Android](#androidappender), [EventLog](#eventlogappender), [DebugOutput](#debugoutputappender)
 - [Automatic 'this' pointer capture](#automatic-this-pointer-capture) (supported only on msvc)
 - [Lazy stream evaluation](#lazy-stream-evaluation)
@@ -104,6 +113,8 @@ And its output:
 - Doesn't require C++11
 - [Extendable](#extending)
 - No `windows.h` dependency
+- Can use UTC or local time
+- Uses modern CMake
 
 # Usage
 To start using plog you need to make 3 simple steps.
@@ -153,7 +164,7 @@ If one of them is zero then log rolling is disabled.
 Sample:
 
 ```cpp
-plog::init(plog::warning, "c:\\logs\\log.csv", 1000000, 5); 
+plog::init(plog::warning, "c:\\logs\\log.csv", 1000000, 5);
 ```
 
 Here the logger is initialized to write all messages with up to warning severity to a file in csv format. Maximum log file size is set to 1'000'000 bytes and 5 log files are kept.
@@ -163,37 +174,37 @@ Here the logger is initialized to write all messages with up to warning severity
 ## Step 3: Logging
 Logging is performed with the help of special macros. A log message is constructed using stream output operators `<<`. Thus it is type-safe and extendable in contrast to a format string output.
 
-### Basic logging macros 
+### Basic logging macros
 This is the most used type of logging macros. They do unconditional logging.
 
 #### Long macros:
 
 ```cpp
-LOG_VERBOSE << "verbose";
-LOG_DEBUG << "debug";
-LOG_INFO << "info";
-LOG_WARNING << "warning";
-LOG_ERROR << "error";
-LOG_FATAL << "fatal";
-LOG_NONE << "none";
+PLOG_VERBOSE << "verbose";
+PLOG_DEBUG << "debug";
+PLOG_INFO << "info";
+PLOG_WARNING << "warning";
+PLOG_ERROR << "error";
+PLOG_FATAL << "fatal";
+PLOG_NONE << "none";
 ```
 
 #### Short macros:
 
 ```cpp
-LOGV << "verbose";
-LOGD << "debug";
-LOGI << "info";
-LOGW << "warning";
-LOGE << "error";
-LOGF << "fatal";
-LOGN << "none";
+PLOGV << "verbose";
+PLOGD << "debug";
+PLOGI << "info";
+PLOGW << "warning";
+PLOGE << "error";
+PLOGF << "fatal";
+PLOGN << "none";
 ```
 
 #### Function-style macros:
 
 ```cpp
-LOG(severity) << "msg";
+PLOG(severity) << "msg";
 ```
 
 ### Conditional logging macros
@@ -202,55 +213,55 @@ These macros are used to do a conditional logging. They accept a condition as a 
 #### Long macros:
 
 ```cpp
-LOG_VERBOSE_IF(cond) << "verbose";
-LOG_DEBUG_IF(cond) << "debug";
-LOG_INFO_IF(cond) << "info";
-LOG_WARNING_IF(cond) << "warning";
-LOG_ERROR_IF(cond) << "error";
-LOG_FATAL_IF(cond) << "fatal";
-LOG_NONE_IF(cond) << "none";
+PLOG_VERBOSE_IF(cond) << "verbose";
+PLOG_DEBUG_IF(cond) << "debug";
+PLOG_INFO_IF(cond) << "info";
+PLOG_WARNING_IF(cond) << "warning";
+PLOG_ERROR_IF(cond) << "error";
+PLOG_FATAL_IF(cond) << "fatal";
+PLOG_NONE_IF(cond) << "none";
 ```
 
 #### Short macros:
 
 ```cpp
-LOGV_IF(cond) << "verbose";
-LOGD_IF(cond) << "debug";
-LOGI_IF(cond) << "info";
-LOGW_IF(cond) << "warning";
-LOGE_IF(cond) << "error";
-LOGF_IF(cond) << "fatal";
-LOGN_IF(cond) << "none";
+PLOGV_IF(cond) << "verbose";
+PLOGD_IF(cond) << "debug";
+PLOGI_IF(cond) << "info";
+PLOGW_IF(cond) << "warning";
+PLOGE_IF(cond) << "error";
+PLOGF_IF(cond) << "fatal";
+PLOGN_IF(cond) << "none";
 ```
 
 #### Function-style macros:
 
 ```cpp
-LOG_IF(severity, cond) << "msg";
+PLOG_IF(severity, cond) << "msg";
 ```
 
 ### Logger severity checker
 In some cases there is a need to perform a group of actions depending on the current logger severity level. There is a special macro for that. It helps to minimize performance penalty when the logger is inactive.
 
 ```cpp
-IF_LOG(severity)
+IF_PLOG(severity)
 ```
 
 Sample:
 
 ```cpp
-IF_LOG(plog::debug) // we want to execute the following statements only at debug severity (and higher)
+IF_PLOG(plog::debug) // we want to execute the following statements only at debug severity (and higher)
 {
     for (int i = 0; i < vec.size(); ++i)
     {
-        LOGD << "vec[" << i << "]: " << vec[i];
+        PLOGD << "vec[" << i << "]: " << vec[i];
     }
 }
 ```
 
 # Advanced usage
 
-## Changing severity at runtime 
+## Changing severity at runtime
 It is possible to set the maximum severity not only at the logger initialization time but at any time later. There are special accessor methods:
 
 ```cpp
@@ -277,7 +288,7 @@ Non-typical log cases require the use of custom initialization. It is done by th
 Logger& init(Severity maxSeverity = none, IAppender* appender = NULL);
 ```
 
-You have to construct an [Appender](#appender) parameterized with a [Formatter](#formatter) and pass it to the `plog::init` function. 
+You have to construct an [Appender](#appender) parameterized with a [Formatter](#formatter) and pass it to the `plog::init` function.
 
 *Note: a lifetime of the appender should be static!*
 
@@ -308,30 +319,30 @@ Here the logger is initialized in the way when log messages are written to both 
 *Refer to [MultiAppender](samples/MultiAppender) for a complete sample.*
 
 ## Multiple loggers
-Multiple [Loggers](#logger) can be used simultaneously each with their own separate configuration. The [Loggers](#logger) differ by their instance number (that is implemented as a template parameter). The default instance is zero. Initialization is done by the appropriate template `plog::init` functions:
+Multiple [Loggers](#logger) can be used simultaneously each with their own separate configuration. The [Loggers](#logger) differ by their instanceId (that is implemented as a template parameter). The default instanceId is zero. Initialization is done by the appropriate template `plog::init` functions:
 
 ```cpp
-Logger<instance>& init<instance>(...);
+Logger<instanceId>& init<instanceId>(...);
 ```
 
 To get a logger use `plog::get` function (returns `NULL` if the logger is not initialized):
 
 ```cpp
-Logger<instance>* get<instance>();
+Logger<instanceId>* get<instanceId>();
 ```
 
-All logging macros have their special versions that accept an instance parameter. These kind of macros have an underscore at the end:
+All logging macros have their special versions that accept an instanceId parameter. These kind of macros have an underscore at the end:
 
 ```cpp
-LOGD_(instance) << "debug";
-LOGD_IF_(instance, condition) << "conditional debug";
-IF_LOG_(instance, severity)
+PLOGD_(instanceId) << "debug";
+PLOGD_IF_(instanceId, condition) << "conditional debug";
+IF_PLOG_(instanceId, severity)
 ```
 
 Sample:
 
 ```cpp
-enum // Define log instances. Default is 0 and is omitted from this enum.
+enum // Define log instanceIds. Default is 0 and is omitted from this enum.
 {
     SecondLog = 1
 };
@@ -342,10 +353,10 @@ int main()
     plog::init<SecondLog>(plog::debug, "MultiInstance-second.txt"); // Initialize the 2nd logger instance.
 
     // Write some messages to the default log.
-    LOGD << "Hello default log!";
+    PLOGD << "Hello default log!";
 
     // Write some messages to the 2nd log.
-    LOGD_(SecondLog) << "Hello second log!";
+    PLOGD_(SecondLog) << "Hello second log!";
 
     return 0;
 }
@@ -361,7 +372,7 @@ Sample:
 ```cpp
 // shared library
 
-// Function that initializes the logger in the shared library. 
+// Function that initializes the logger in the shared library.
 extern "C" void EXPORT initialize(plog::Severity severity, plog::IAppender* appender)
 {
     plog::init(severity, appender); // Initialize the shared library logger.
@@ -370,7 +381,7 @@ extern "C" void EXPORT initialize(plog::Severity severity, plog::IAppender* appe
 // Function that produces a log message.
 extern "C" void EXPORT foo()
 {
-    LOGI << "Hello from shared lib!";
+    PLOGI << "Hello from shared lib!";
 }
 ```
 
@@ -385,7 +396,7 @@ int main()
 {
     plog::init(plog::debug, "ChainedApp.txt"); // Initialize the main logger.
 
-    LOGD << "Hello from app!"; // Write a log message.
+    PLOGD << "Hello from app!"; // Write a log message.
 
     initialize(plog::debug, plog::get()); // Initialize the logger in the shared library. Note that it has its own severity.
     foo(); // Call a function from the shared library that produces a log message.
@@ -402,7 +413,7 @@ int main()
 Plog is designed to be small but flexible, so it prefers templates to interface inheritance. All main entities are shown on the following UML diagram:
 
 ![Plog class diagram](http://gravizo.com/svg?@startuml;class%20Logger<int%20instance>%20<<singleton>>%20{;%20%20%20%20+addAppender%28%29;%20%20%20%20+getMaxSeverity%28%29;%20%20%20%20+setMaxSeverity%28%29;%20%20%20%20+checkSeverity%28%29;%20%20%20%20-maxSeverity;%20%20%20%20-appenders;};package%20Appenders%20<<Frame>>%20{;%20%20%20%20interface%20IAppender%20{;%20%20%20%20%20%20%20%20+write%28%29;%20%20%20%20};%20%20%20%20;%20%20%20%20class%20RollingFileAppender<Formatter,%20Converter>;%20%20%20%20class%20ConsoleAppender<Formatter>;%20%20%20%20class%20ColorConsoleAppender<Formatter>;%20%20%20%20class%20AndroidAppender<Formatter>;%20%20%20%20class%20EventLogAppender<Formatter>;%20%20%20%20class%20DebugOutputAppender<Formatter>;%20%20%20%20ConsoleAppender%20<|--%20ColorConsoleAppender;%20%20%20%20IAppender%20<|-u-%20Logger;%20%20%20%20IAppender%20<|--%20RollingFileAppender;%20%20%20%20IAppender%20<|--%20ConsoleAppender;%20%20%20%20IAppender%20<|--%20AndroidAppender;%20%20%20%20IAppender%20<|--%20EventLogAppender;%20%20%20%20IAppender%20<|--%20DebugOutputAppender;%20%20%20%20;%20%20%20%20Logger%20"1"%20o--%20"0..n"%20IAppender;};package%20Formatters%20<<Frame>>%20{;%20%20%20%20class%20CsvFormatter%20{;%20%20%20%20%20%20%20%20{static}%20header%28%29;%20%20%20%20%20%20%20%20{static}%20format%28%29;%20%20%20%20};%20%20%20%20class%20TxtFormatter%20{;%20%20%20%20%20%20%20%20{static}%20header%28%29;%20%20%20%20%20%20%20%20{static}%20format%28%29;%20%20%20%20};%20%20%20%20class%20FuncMessageFormatter%20{;%20%20%20%20%20%20%20%20{static}%20header%28%29;%20%20%20%20%20%20%20%20{static}%20format%28%29;%20%20%20%20};%20%20%20%20class%20MessageOnlyFormatter%20{;%20%20%20%20%20%20%20%20{static}%20header%28%29;%20%20%20%20%20%20%20%20{static}%20format%28%29;%20%20%20%20};};package%20Converters%20<<Frame>>%20{;%20%20%20%20class%20UTF8Converter%20{;%20%20%20%20%20%20%20%20{static}%20header%28%29;%20%20%20%20%20%20%20%20{static}%20convert%28%29;%20%20%20%20};%20%20%20%20class%20NativeEOLConverter%20<NextConverter>{;%20%20%20%20%20%20%20%20{static}%20header%28%29;%20%20%20%20%20%20%20%20{static}%20convert%28%29;%20%20%20%20};};enum%20Severity%20{;%20%20%20%20none,;%20%20%20%20fatal,;%20%20%20%20error,;%20%20%20%20warning,;%20%20%20%20info,;%20%20%20%20debug,;%20%20%20%20verbose;};class%20Record%20{;%20%20%20%20+operator<<%28%29;%20%20%20%20-time;%20%20%20%20-severity;%20%20%20%20-tid;%20%20%20%20-object;%20%20%20%20-line;%20%20%20%20-file;%20%20%20%20-message;%20%20%20%20-func;};hide%20empty%20members;hide%20empty%20fields;@enduml)
-<!-- 
+<!--
 @startuml
 
 class Logger<int instance> <<singleton>> {
@@ -418,7 +429,7 @@ package Appenders <<Frame>> {
     interface IAppender {
         +write();
     }
-    
+
     class RollingFileAppender<Formatter, Converter>
     class ConsoleAppender<Formatter>
     class ColorConsoleAppender<Formatter>
@@ -433,7 +444,7 @@ package Appenders <<Frame>> {
     IAppender <|-- AndroidAppender
     IAppender <|-- EventLogAppender
     IAppender <|-- DebugOutputAppender
-    
+
     Logger "1" o-- "0..n" IAppender
 }
 
@@ -508,10 +519,10 @@ There are 5 functional parts:
 
 The log data flow is shown below:
 
-![Log data flow](http://gravizo.com/g?@startuml;%28*%29%20-r->%20"LOG%20macro";-r->%20"Record";-r->%20"Logger";-r-->%20"Appender";-d->%20"Formatter";-d->%20"Converter";-u->%20"Appender";-r->%20%28*%29;@enduml)
+![Log data flow](http://gravizo.com/g?@startuml;%28*%29%20-r->%20"PLOG%20macro";-r->%20"Record";-r->%20"Logger";-r-->%20"Appender";-d->%20"Formatter";-d->%20"Converter";-u->%20"Appender";-r->%20%28*%29;@enduml)
 <!--
 @startuml
-(*) -r-> "LOG macro"
+(*) -r-> "PLOG macro"
 -r-> "Record"
 -r-> "Logger"
 -r-> "Appender"
@@ -523,21 +534,21 @@ The log data flow is shown below:
 -->
 
 ## Logger
-[Logger](#logger) is a center object of the whole logging system. It is a singleton and thus it forms a known single entry point for configuration and processing log data. [Logger](#logger) can act as [Appender](#appender) for another [Logger](#logger) because it implements `IAppender` interface. Also there can be several independent loggers that are parameterized by an integer instance number. The default instance is 0.
+[Logger](#logger) is a center object of the whole logging system. It is a singleton and thus it forms a known single entry point for configuration and processing log data. [Logger](#logger) can act as [Appender](#appender) for another [Logger](#logger) because it implements `IAppender` interface. Also there can be several independent loggers that are parameterized by an integer instanceId number. The default instanceId is 0.
 
 ```cpp
-template<int instance>
-class Logger : public util::Singleton<Logger<instance> >, public IAppender
+template<int instanceId>
+class Logger : public util::Singleton<Logger<instanceId> >, public IAppender
 {
 public:
     Logger(Severity maxSeverity = none);
-    
+
     Logger& addAppender(IAppender* appender);
-    
+
     Severity getMaxSeverity() const;
     void setMaxSeverity(Severity severity);
     bool checkSeverity(Severity severity) const;
-    
+
     virtual void write(const Record& record);
     void operator+=(const Record& record);
 };
@@ -564,27 +575,28 @@ class Record
 {
 public:
     Record(Severity severity, const char* func, size_t line, const char* file, const void* object);
-    
+
     //////////////////////////////////////////////////////////////////////////
     // Stream output operators
-        
+
     Record& operator<<(char data);
     Record& operator<<(wchar_t data);
-    
+
     template<typename T>
     Record& operator<<(const T& data);
-    
+
     //////////////////////////////////////////////////////////////////////////
     // Getters
-    
+
     virtual const util::Time& getTime() const;
     virtual Severity getSeverity() const;
     virtual unsigned int getTid() const;
     virtual const void* getObject() const;
     virtual size_t getLine() const;
-    virtual const util::nchar* getMessage() const
-    virtual const char* getFunc() const
-    virtual const char* getFile() const
+    virtual const util::nchar* getMessage() const;
+    virtual const char* getFunc() const;
+    virtual const char* getFile() const;
+    virtual int getInstanceId() const;
 };
 ```
 
@@ -616,9 +628,12 @@ This is a classic log format available in almost any log library. It is good for
 2014-11-11 00:29:06.261 WARN  [4460] [main@25] warning
 2014-11-11 00:29:06.261 DEBUG [4460] [main@26] debug
 2014-11-11 00:29:06.261 INFO  [4460] [main@32] This is a message with "quotes"!
-2014-11-11 00:29:06.261 DEBUG [4460] [Object::Object@8] 
-2014-11-11 00:29:06.261 DEBUG [4460] [Object::~Object@13] 
+2014-11-11 00:29:06.261 DEBUG [4460] [Object::Object@8]
+2014-11-11 00:29:06.261 DEBUG [4460] [Object::~Object@13]
 ```
+
+### TxtFormatterUtcTime
+This is a variant of [TxtFormatter](#txtformatter) that uses UTC time instead of local time.
 
 ### CsvFormatter
 This is the most powerful log format. It can be easily read without any tools (but slighlty harder than [TXT format](#txtformatter)) and can be heavily analyzed if it is opened with a CSV-aware tool (like Excel). One rows can be highlighted according to their cell values, another rows can be hidden, columns can be manipulated and you can even run SQL queries on log data! This is a recommended format if logs are big and require heavy analysis. Also 'this' pointer is shown so object instances can be told apart.
@@ -637,6 +652,9 @@ Date;Time;Severity;TID;This;Function;Message
 
 *Note: message size is limited to 32000 chars.*
 
+### CsvFormatterUtcTime
+This is a variant of [CsvFormatter](#csvformatter) that uses UTC time instead of local time.
+
 ### FuncMessageFormatter
 This format is designed to be used with appenders that provide their own timestamps (like [AndroidAppender](#androidappender) or linux syslog facility).
 
@@ -647,12 +665,12 @@ main@24: info
 main@25: warning
 main@26: debug
 main@32: This is a message with "quotes"!
-Object::Object@8: 
-Object::~Object@13: 
+Object::Object@8:
+Object::~Object@13:
 ```
 
 ### MessageOnlyFormatter
-Use this formatter when you're interested only in a log message. 
+Use this formatter when you're interested only in a log message.
 
 ```
 fatal
@@ -664,7 +682,7 @@ This is a message with "quotes"!
 ```
 
 ## Converter
-[Converter](#converter) is responsible for conversion of [Formatter](#formatter) output data to a raw buffer (represented as `std::string`). It is used by [RollingFileAppender](#rollingfileappender) to perform a conversion before writing to a file. There is no base class for converters, they are implemented as classes with static functions `convert` and `header`: 
+[Converter](#converter) is responsible for conversion of [Formatter](#formatter) output data to a raw buffer (represented as `std::string`). It is used by [RollingFileAppender](#rollingfileappender) to perform a conversion before writing to a file. There is no base class for converters, they are implemented as classes with static functions `convert` and `header`:
 
 ```cpp
 class Converter
@@ -678,7 +696,7 @@ public:
 *See [How to implement a custom converter](#custom-converter).*
 
 ### UTF8Converter
-[UTF8Converter](#utf8converter) is a default converter in plog. It converts string data to UTF-8 with BOM. 
+[UTF8Converter](#utf8converter) is a default converter in plog. It converts string data to UTF-8 with BOM.
 
 ### NativeEOLConverter
 This converter converts `<LF>` line endings to `<CRLF>` on Windows and do nothing on everything else. As a template parameter it accepts another converter that is called next (by default [UTF8Converter](#utf8converter)).
@@ -716,7 +734,7 @@ RollingFileAppender<Formatter, Converter>::RollingFileAppender(const util::nchar
 - `maxFileSize` - the maximum log file size in bytes
 - `maxFiles` - a number of log files to keep
 
-If `maxFileSize` or `maxFiles` is 0 then rolling behaviour is turned off. 
+If `maxFileSize` or `maxFiles` is 0 then rolling behaviour is turned off.
 
 The sample file names produced by this appender:
 
@@ -779,7 +797,7 @@ DebugOutputAppender<Formatter>::DebugOutputAppender();
 Log messages are constructed using lazy stream evaluation. It means that if a log message will be dropped (because of its severity) then stream output operators are not executed. Thus performance penalty of unprinted log messages is negligible.
 
 ```cpp
-LOGD << /* the following statements will be executed only when the logger severity is debug or higher */ ...
+PLOGD << /* the following statements will be executed only when the logger severity is debug or higher */ ...
 ```
 
 ## Stream improvements over std::ostream
@@ -788,36 +806,21 @@ Stream output in plog has several improvements over the standard `std::ostream`:
 - handles wide chars/strings: `wchar_t`, `wchar_t*`, `std::wstring`
 - handles `NULL` values for C-strings: `char*` and `wchar_t*`
 - implicitly casts objects to: `std::string` and `std::wstring` (if they have an appropriate cast operator)
-- supports `QString` (you need to include Qt headers before plog)
+- supports `QString` and `QStringRef` (you need to include Qt headers before plog)
 - supports managed C++ `System::String^`
 
 ## Automatic 'this' pointer capture
-'This' pointer is captured automatically to log data and can be printed by [CsvFormatter](#csvformatter). Unfortunately this feature is supported only on msvc 2010 and higher.
+'This' pointer is captured automatically to log data and can be printed by [CsvFormatter](#csvformatter). Unfortunately this feature is supported only on msvc 2010 and higher. It's disabled by default (due to some compatibility issues with `__if_exists` C++ extension), to enable it define `PLOG_ENABLE_GET_THIS`.
 
 ## Headers to include
 The core plog functionality is provided by inclusion of `plog/Log.h` file. Extra components require inclusion of corresponding extra headers after `plog/Log.h`.
 
-![Plog core and extra components](http://gravizo.com/g?@startuml;package%20"Plog%20core\\n%28no%20additional%20include,%20just%20plog/Log.h%29"%20{;%20%20class%20TxtFormatter;%20%20class%20CsvFormatter;%20%20class%20UTF8Converter;%20%20class%20RollingFileAppender;};package%20"Plog%20extra\\n%28requires%20additional%20include%29"%20{;%20%20class%20FuncMessageFormatter;%20%20class%20ConsoleAppender;%20%20class%20ColorConsoleAppender;%20%20class%20AndroidAppender;%20%20class%20DebugOutputAppender;%20%20class%20EventLogAppender;};hide%20empty%20members;hide%20empty%20fields;@enduml)
-<!--
-@startuml
-package "Plog core\n(no additional include, just plog/Log.h)" {
-  class TxtFormatter
-  class CsvFormatter
-  class UTF8Converter
-  class RollingFileAppender
-}
-package "Plog extra\n(requires additional include)" {
-  class FuncMessageFormatter
-  class ConsoleAppender
-  class ColorConsoleAppender
-  class AndroidAppender
-  class DebugOutputAppender
-  class EventLogAppender
-}
-hide empty members
-hide empty fields
-@enduml
--->
+Core components are:
+- [TxtFormatter](#txtformatter)/[TxtFormatterUtcTime](#txtformatterutctime)
+- [CsvFormatter](#csvformatter)/[CsvFormatterUtcTime](#csvformatterutctime)
+- [UTF8Converter](#utf8converter)
+- [NativeEOLConverter](#nativeeolconverter)
+- [RollingFileAppender](#rollingfileappender)
 
 ## Unicode
 Plog is unicode aware and wide string friendly. All messages are converted to a system native char type:
@@ -853,7 +856,7 @@ Whether `wchar_t`, `wchar_t*`, `std::wstring` can be streamed to log messages or
 *Note: wide string support requires linking to `iconv` on macOS.*
 
 ## Performance
-Plog is not using any asynchronous techniques so it may slow down your application on large volumes of log messages. 
+Plog is not using any asynchronous techniques so it may slow down your application on large volumes of log messages.
 
 Producing a single log message takes the following amount of time:
 
@@ -868,6 +871,19 @@ Producing a single log message takes the following amount of time:
 Assume 20 microsec per a log call then 500 log calls per a second will slow down an application by 1%. It is acceptable for the most use cases.
 
 *Refer to [Performance](samples/Performance) for a complete sample.*
+
+## Printf style formatting
+Plog supports printf style formatting:
+
+```cpp
+PLOGI.printf("%d %s", 42, "test");
+PLOGI.printf(L"%d %S", 42, "test"); // wchar_t version
+```
+
+## LOG_XXX macro name clashes
+`LOG_XXX` macro names may be in conflict with other libraries (for example [syslog](https://linux.die.net/man/3/syslog)). In such cases you can disable `LOG_XXX` macro by defining `PLOG_OMIT_LOG_DEFINES` and use `PLOG_XXX`.
+
+*Define `PLOG_OMIT_LOG_DEFINES` before `#include <plog/Log.h>` or in the project settings!*
 
 # Extending
 Plog can be easily extended to support new:
@@ -966,9 +982,10 @@ There are a number of samples that demonstrate various aspects of using plog. Th
 |[Library](samples/Library)|Shows plog usage in static libraries.|
 |[MultiAppender](samples/MultiAppender)|Shows how to use multiple appenders with the same logger.|
 |[MultiInstance](samples/MultiInstance)|Shows how to use multiple logger instances, each instance has its own independent configuration.|
-|[NativeEOL](samples/NativeEOL)|Shows how to use [NativeEOLConverter](#nativeeolconverter).|
+|[SkipNativeEOL](samples/SkipNativeEOL)|Shows how to skip [NativeEOLConverter](#nativeeolconverter).|
 |[ObjectiveC](samples/ObjectiveC)|Shows that plog can be used in ObjectiveC++.|
 |[Performance](samples/Performance)|Measures time per a log call.|
+|[UtcTime](samples/UtcTime)|Shows how to use UTC time instead of local time.|
 
 # References
 
@@ -1002,15 +1019,45 @@ Plog is licensed under the [MPL version 2.0](http://mozilla.org/MPL/2.0/). You c
 
 # Version history
 
-## Version 1.1.4 (TBD)
+## Version 1.1.5 (21 Oct 2019)
+- New: Use `NativeEOLConverter` by default (#145)
+- New: Add logger `instanceId` into `Record` (#141)
+- New: Add support for the printf style formatting (#139)
+- New: Make `severityFromString` case-insensitive
+- New: Define macro names with "PLOG" instead of "LOG" in order to avoid conflicts with "LOG" names defined in other packages or in system headers (#25, #129)
+- New: Add option for building samples (ON per default) (#125, #126)
+- New: Add CMake installer (#121, #122)
+- New: Add support for `QStringRef`
+- New: Modernize CMake (#106)
+- New: Allow rollLogFiles to be called manually (#100, #103)
+- New: Add ability to use UTC time (#101)
+- Fix: Disable `PLOG_GET_THIS()` by default (#120, #132)
+- Fix: Change `RegSetValueExW` prototype to match windows native declaration (void* -> BYTE*)
+- Fix: Move `System::String^` handler to a free function (#131)
+- Fix: Making sure we can build standalone under Windows (#123)
+- Fix: Parse error by ReSharper (#116)
+- Fix: Parse error by Clang Code Model in Qt Creator (#114)
+- Fix: Printing CustomType at begin of the stream (#94)
+- Fix: Make `RollingFileAppender` work with maxFiles set to 1 (#70)
+- Fix: Clang-tidy nullable issue
+
+## Version 1.1.4 (26 Mar 2018)
+- New: Add `-Wundef` support
+- New: Add [RTEMS](https://www.rtems.org) support (#87)
+- New: Add Intel C++ Compiler support (#84)
+- New: Add FreeBSD support (#83)
+- New: Add `-Wnon-virtual-dtor` support (#79)
+- New: Support `ostream` operator<< on Windows as well as `wostream` (#66)
+- Fix: Fix compilation for Android (#68)
+- Fix: Fix compiling with CMake 2.8
 
 ## Version 1.1.3 (09 Aug 2017)
-- New: Introduce `PLOG_ENABLE_WCHAR_INPUT` macro to control wide string support
-- New #63: Add support for managed C++ `System::String^`
-- New #61: Add missing macros for logging with severity NONE
-- Fix #59: Unable to build [NativeEOLConverter](#nativeeolconverter)/[UTF8Converter](#utf8converter) using Visual Studio
-- Fix #58: Use WriteConsoleW instead of global setlocale for writing unicode into windows console
-- Fix #55: Mention about linking to `iconv` on macOS
+- New: Introduce `LOG_ENABLE_WCHAR_INPUT` macro to control wide string support
+- New: Add support for managed C++ `System::String^` (#63)
+- New: Add missing macros for logging with severity NONE (#61)
+- Fix: Unable to build [NativeEOLConverter](#nativeeolconverter)/[UTF8Converter](#utf8converter) using Visual Studio (#59)
+- Fix: Use `WriteConsoleW` instead of global `setlocale` for writing unicode into Windows console (#58)
+- Fix: Mention about linking to `iconv` on macOS (#55)
 - Fix: `IF_LOG` macro didn't work for curly braces blocks
 
 ## Version 1.1.2 (02 May 2017)
@@ -1019,36 +1066,36 @@ Plog is licensed under the [MPL version 2.0](http://mozilla.org/MPL/2.0/). You c
 - New: Slightly increase log performance on Windows (about 9%).
 
 ## Version 1.1.1 (17 Apr 2017)
-- Fix #47: Update includes
-- Fix #45, #13: Get rid of `windows.h` dependency
-- Fix #40: Signed unsigned assignment warning
-- Fix #39: Build warning on macOS 10.12 Sierra
-- New #36: Ability to check whether event log registry entry exists
+- New: Ability to check whether event log registry entry exists (#36)
+- Fix: Update includes (#47)
+- Fix: Get rid of `windows.h` dependency (#45, #13)
+- Fix: Signed unsigned assignment warning (#40)
+- Fix: Build warning on macOS 10.12 Sierra (#39)
 
 ## Version 1.1.0 (20 Nov 2016)
-- Fix #34: Introduce binary compatible interface to Record (WARNING: this is not compatible with 1.0.x version in [Chained mode](#chained-loggers), so don't mix 1.1.x and 1.0.x)
+- Fix: Introduce binary compatible interface to `Record` (WARNING: this is not compatible with 1.0.x version in [Chained mode](#chained-loggers), so don't mix 1.1.x and 1.0.x) (#34)
 
 ## Version 1.0.2 (19 Nov 2016)
-- New #11: Default instance can be set via `PLOG_DEFAULT_INSTANCE`
-- New #30: Support for `QString`
+- New: Default instanceId can be set via `LOG_DEFAULT_INSTANCE` (#11)
+- New: Support for `QString` (#30)
 - New: Support for C++Builder
-- New #15: `severityFromString` function
-- New #21: Capture source file name (disabled by default)
-- New #33: Add [DebugOutputAppender](#debugoutputappender)
-- New #32: Add [EventLogAppender](#eventlogappender)
-- Fix #12: Crash on processing Obj-C function name
-- Fix #17: Compatibility with [MinGW](http://www.mingw.org/)
-- Fix #27: `IF_LOG_` macro in if/else leads to miss else branch
-- Fix #18, #29: Thread safety for [ConsoleAppender](#consoleappender)/[ColorConsoleAppender](#colorconsoleappender)
-- Fix #31: Support for stream manipulators like std::endl
+- New: `severityFromString` function (#15)
+- New: Capture source file name (disabled by default) (#21)
+- New: Add [DebugOutputAppender](#debugoutputappender) (#33)
+- New: Add [EventLogAppender](#eventlogappender) (#32)
+- Fix: Crash on processing Obj-C function name (#12)
+- Fix: Compatibility with [MinGW](http://www.mingw.org/) (#17)
+- Fix: `IF_LOG_` macro in if/else leads to miss else branch (#27)
+- Fix: Thread safety for [ConsoleAppender](#consoleappender)/[ColorConsoleAppender](#colorconsoleappender) (#18, #29)
+- Fix: Support for stream manipulators like `std::endl` (#31)
 - Fix: Compatibility with old Visual Studio versions
 
 ## Version 1.0.1 (01 Nov 2015)
 - New: Add [ColorConsoleAppender](#colorconsoleappender)
-- Fix #6: Compatibility with [Mingw-w64](http://mingw-w64.org/)
-- Fix #7: Log file not created if file name contains Unicode characters in Windows
-- Fix #4: Flush stdout
-- Fix #3: IntelliSense error: expected an identifier
+- Fix: Compatibility with [Mingw-w64](http://mingw-w64.org/) (#6)
+- Fix: Log file not created if file name contains Unicode characters in Windows (#7)
+- Fix: Flush stdout (#4)
+- Fix: IntelliSense error: expected an identifier (#3)
 
 ## Version 1.0.0 (19 May 2015)
 - Initial public release

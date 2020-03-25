@@ -1,22 +1,34 @@
-#include "opencv2/objdetect/objdetect.hpp"
+/***
+ *    Description:  Helper.
+ *
+ *        Created:  2020-03-25
+
+ *         Author:  Dilawar Singh <dilawars@ncbs.res.in>
+ *   Organization:  NCBS Bangalore
+ *        License:  MIT License
+ */
+
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/objdetect/objdetect.hpp"
 
+#include <boost/algorithm/string.hpp>
+
+#include <chrono>
 #include <iostream>
 #include <queue>
-#include <stdio.h>
 #include <thread>
-#include <chrono>
-#include <boost/algorithm/string.hpp>
-#include <boost/regex.hpp>
+#include <regex>
 
-#include <iomanip>
 #include <ctime>
+#include <iomanip>
 
 #include "constants.h"
 #include "globals.h"
 #include "helpers.h"
 #include "pstream.h"
+
+#include "plog/Log.h"
 
 #if USE_BOOST_PROCESS
 #include <boost/process.hpp>
@@ -24,24 +36,22 @@
 
 bool rectInImage(cv::Rect rect, cv::Mat image)
 {
-    return rect.x > 0 && rect.y > 0 && rect.x+rect.width < image.cols &&
-           rect.y+rect.height < image.rows;
+    return rect.x > 0 && rect.y > 0 && rect.x + rect.width < image.cols &&
+           rect.y + rect.height < image.rows;
 }
 
-bool inMat(cv::Point p,int rows,int cols)
+bool inMat(cv::Point p, int rows, int cols)
 {
     return p.x >= 0 && p.x < cols && p.y >= 0 && p.y < rows;
 }
 
 cv::Mat matrixMagnitude(const cv::Mat &matX, const cv::Mat &matY)
 {
-    cv::Mat mags(matX.rows,matX.cols,CV_64F);
-    for (int y = 0; y < matX.rows; ++y)
-    {
+    cv::Mat mags(matX.rows, matX.cols, CV_64F);
+    for (int y = 0; y < matX.rows; ++y) {
         const double *Xr = matX.ptr<double>(y), *Yr = matY.ptr<double>(y);
         double *Mr = mags.ptr<double>(y);
-        for (int x = 0; x < matX.cols; ++x)
-        {
+        for (int x = 0; x < matX.cols; ++x) {
             double gX = Xr[x], gY = Yr[x];
             double magnitude = sqrt((gX * gX) + (gY * gY));
             Mr[x] = magnitude;
@@ -54,7 +64,7 @@ double computeDynamicThreshold(const cv::Mat &mat, double stdDevFactor)
 {
     cv::Scalar stdMagnGrad, meanMagnGrad;
     cv::meanStdDev(mat, meanMagnGrad, stdMagnGrad);
-    double stdDev = stdMagnGrad[0] / sqrt(mat.rows*mat.cols);
+    double stdDev = stdMagnGrad[0] / sqrt(mat.rows * mat.cols);
     return stdDevFactor * stdDev + meanMagnGrad[0];
 }
 
@@ -63,7 +73,7 @@ double computeDynamicThreshold(const cv::Mat &mat, double stdDevFactor)
  *
  * @param milliseconds
  */
-void _sleep( size_t x )
+void _sleep(size_t x)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(x));
 }
@@ -76,11 +86,10 @@ void _sleep( size_t x )
  *
  * @return  Difference in milli-seconds.
  */
-int diff_in_ms( time_type_ t1, time_type_ t2 )
+int diff_in_ms(time_type_ t1, time_type_ t2)
 {
     return abs(
-               std::chrono::duration_cast< std::chrono::milliseconds >( t2 - t1 ).count( )
-           );
+        std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count());
 }
 
 /* --------------------------------------------------------------------------*/
@@ -89,30 +98,28 @@ int diff_in_ms( time_type_ t1, time_type_ t2 )
  *
  * @Param path
  *
- * @Returns   
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
 std::string expand_user(std::string path)
 {
     string home = getenv("HOME");
 
-    if (! path.empty() && path[0] == '~')
-    {
+    if (!path.empty() && path[0] == '~') {
         assert(path.size() == 1 or path[1] == '/');  // or other error handling
 
-        if ( home.size( ) > 0 || (home == getenv("USERPROFILE")) )
+        if (home.size() > 0 || (home == getenv("USERPROFILE")))
             path.replace(0, 1, home);
-        else
-        {
+        else {
             char const *hdrive = getenv("HOMEDRIVE"),
-                        *hpath = getenv("HOMEPATH");
+                       *hpath = getenv("HOMEPATH");
             path.replace(0, 1, std::string(hdrive) + hpath);
         }
     }
 
     // If there is $HOME.
-    if( path.find( "$HOME" ) != string::npos )
-        boost::replace_all( path, "$HOME", home );
+    if (path.find("$HOME") != string::npos)
+        boost::replace_all(path, "$HOME", home);
 
     return path;
 }
@@ -123,13 +130,13 @@ std::string expand_user(std::string path)
  *
  * @Param command
  *
- * @Returns   
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-string spawn( const string& command )
+string spawn(const string &command)
 {
     vector<string> cmdVec;
-    boost::algorithm::split( cmdVec, command, boost::is_any_of(" ") );
+    boost::algorithm::split(cmdVec, command, boost::is_any_of(" "));
 
 #if USE_BOOST_PROCESS
     namespace bp = boost::process;
@@ -137,58 +144,45 @@ string spawn( const string& command )
 #ifdef OS_IS_UNIX
     LOG_INFO << "Spawning " << command << endl;
 #ifdef OS_IS_APPLE
-    bp::spawn( command );
+    bp::spawn(command);
 #else
-    bp::spawn( command );
+    bp::spawn(command);
 #endif
 #endif
 
-#else // NOT USING BOOST SUBPROCESS
+#else  // NOT USING BOOST SUBPROCESS
 
-    LOG_INFO << "Executing " << command;
-    redi::ipstream proc( command );
+    LOG_DEBUG << "Executing " << command;
+    redi::ipstream proc(command);
 
     stringstream ss;
     string line;
-    while( std::getline( proc.out( ), line ) )
-        ss << line << endl;
-    return ss.str( );
+    while (std::getline(proc.out(), line)) ss << line << endl;
+    return ss.str();
 
 #endif
     return "";
 }
 
-
 /* --------------------------------------------------------------------------*/
 /**
  * @Synopsis  Find the display using xrander.
  *
- * @Returns   
+ * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-vector<string> find_display( )
+vector<string> find_display()
 {
-    const string out = spawn( "xrandr -q" );
-    boost::smatch what;
-    boost::regex disp_regex( "^(\\S+)\\s+connected" );
+    const string out = spawn("xrandr -q");
+    std::smatch what;
+    std::regex disp_regex("^(\\S+)\\s+connected");
     vector<string> res;
 
     string line;
-    istringstream f( out );
+    istringstream f(out);
 
-    while( std::getline(f, line ) )
-    {
-        if(boost::regex_search( line, what, disp_regex ))
-            res.push_back(  what[1] );
+    while (std::getline(f, line)) {
+        if (std::regex_search(line, what, disp_regex)) res.push_back(what[1]);
     }
     return res;
 }
-
-#if 0
-// WARN: Require gcc-5.0
-void print_time( time_type_ time, const std::string end )
-{
-    std::time_t now = std::chrono::system_clock::to_time_t( time );
-    std::cout << std::put_time( std::localtime(&now), "%F %T" ) << end;
-}
-#endif

@@ -19,21 +19,22 @@ using namespace std;
 #include "etbapplication.h"
 #include "etbwindow.h"
 #include "plog/Log.h"
+#include "../core/main_loop.h"
 #include "../core/ConfigManager.h"
 
 namespace bfs = boost::filesystem;
 
-extern ConfigManager config_manager_;
+extern unique_ptr<ConfigManager> pConfigManager_;
 
 ETBApplication::ETBApplication() : Gtk::Application("org.dilawar.application")
 {
     try {
         // Load default values.
-        show_user_face_ = config_manager_.getValue<bool>( 
+        show_user_face_ = pConfigManager_->getValue<bool>( 
                 "global.show_user_face" );
-        user_has_small_eyes_ = config_manager_.getValue<bool>( 
+        user_has_small_eyes_ = pConfigManager_->getValue<bool>( 
                 "global.user_has_small_eyes" );
-        user_wearning_glasses_ = config_manager_.getValue<bool>( 
+        user_wearning_glasses_ = pConfigManager_->getValue<bool>( 
                 "global.user_wearning_glasses"); 
     } catch( std::exception& e ) {
         LOG_INFO << "Failed to load configuration values" <<  e.what() << endl;
@@ -41,8 +42,7 @@ ETBApplication::ETBApplication() : Gtk::Application("org.dilawar.application")
         user_has_small_eyes_ = false;
         user_wearning_glasses_ = false;
     }
-
-    // Glib::set_application_name("Eyes That Blink");
+    Glib::set_application_name("Eyes That Blink");
 }
 
 ETBApplication* ETBApplication::create()
@@ -53,9 +53,9 @@ ETBApplication* ETBApplication::create()
 void ETBApplication::setSmallEyeOption( )
 {
     bool value = smallEye.get_active( );
-    config_manager_.setValue<bool>( "global.user_has_small_eyes", value );
+    pConfigManager_->setValue<bool>( "global.user_has_small_eyes", value );
     reload_eye_cascade( );
-    config_manager_.writeConfigFile( );
+    pConfigManager_->writeConfigFile( );
 }
 
 
@@ -63,9 +63,9 @@ void ETBApplication::setEyeGlassOption( )
 {
     bool value = glasses.get_active( );
     LOG_INFO << "Setting 'user wearing glasses?' to " << value;
-    config_manager_.setValue<bool>( "global.user_wearing_glasses", value );
+    pConfigManager_->setValue<bool>( "global.user_wearing_glasses", value );
     reload_eye_cascade( );
-    config_manager_.writeConfigFile( );
+    pConfigManager_->writeConfigFile( );
 }
 
 /* --------------------------------------------------------------------------*/
@@ -79,7 +79,7 @@ void ETBApplication::setShowUserFace( )
 {
     LOG_INFO << "Toggling show user face ";
     bool val = ! show_user_face_;
-    config_manager_.setValue<bool>( "global.show_user_face", val );
+    pConfigManager_->setValue<bool>( "global.show_user_face", val );
     show_user_face_ = val;
 }
 
@@ -101,8 +101,8 @@ void ETBApplication::setBlinkThresholdValue( )
 {
     double value = threshold.get_value( );
     LOG_INFO << "Setting threshold value to " << value;
-    config_manager_.setBlinkThreshold( value );
-    config_manager_.writeConfigFile( );
+    pConfigManager_->setBlinkThreshold( value );
+    pConfigManager_->writeConfigFile( );
 }
 
 
@@ -121,59 +121,59 @@ void ETBApplication::create_window()
                 )
             );
     // Table.
-    table.resize( 8, 1 );
+    table_.resize( 8, 1 );
 
     // Small eyes button.
     smallEye.set_label( "Small eyes" );
-    if( config_manager_.getValue<bool>( "global.user_has_small_eyes" ) == true )
+    if( pConfigManager_->getValue<bool>( "global.user_has_small_eyes" ) == true )
         smallEye.set_active( );
 
     showUserFace.set_label( "Show my face" );
-    showUserFace.set_active( config_manager_.getValue<bool>( "global.show_user_face" ) );
+    showUserFace.set_active( pConfigManager_->getValue<bool>( "global.show_user_face" ) );
     showUserFace.signal_toggled( ).connect( 
             sigc::mem_fun( *this, &ETBApplication::setShowUserFace )
             );
     showUserFace.show( );
-    table.attach( showUserFace, 0, 1, 0, 1 );
+    table_.attach( showUserFace, 0, 1, 0, 1 );
 
     smallEye.signal_toggled( ).connect( 
             sigc::mem_fun( *this, &ETBApplication::setSmallEyeOption )
             );
     smallEye.show( );
-    table.attach( smallEye, 0, 1, 1, 2 );
+    table_.attach( smallEye, 0, 1, 1, 2 );
 
     // Glasses.
     glasses.set_label( "Wearing glasses? " );
     glasses.set_active( 
-            config_manager_.getValue<bool>( "global.user_wearing_glasses" )
+            pConfigManager_->getValue<bool>( "global.user_wearing_glasses" )
             );
 
     glasses.signal_toggled( ).connect( 
             sigc::mem_fun( *this, &ETBApplication::setEyeGlassOption )
             );
     glasses.show( );
-    table.attach( glasses, 0, 1, 2, 3);
+    table_.attach( glasses, 0, 1, 2, 3);
 
     label.set_label( "Blinks per min" );
     label.show( );
     thresBox.pack_start( label ); 
 
     threshold.set_range( 10, 20);
-    threshold.set_value( config_manager_.getBlinkPerMinuteThreshold( ) );
+    threshold.set_value( pConfigManager_->getBlinkPerMinuteThreshold( ) );
 
     threshold.signal_value_changed( ).connect( 
                 sigc::mem_fun( *this, &ETBApplication::setBlinkThresholdValue )
             );
     thresBox.pack_start( threshold );
     threshold.show( );
-    table.attach( thresBox, 0, 1, 3, 4);
+    table_.attach( thresBox, 0, 1, 3, 4);
     thresBox.show( );
 
-    table.attach( image, 0, 1, 4, 7);
-    image.show( );
+    table_.attach( image_, 0, 1, 4, 7);
+    image_.show( );
 
-    window.add( table );
-    table.show( );
+    window.add( table_ );
+    table_.show( );
 
     // Make sure that the application runs for as long this window is 
     add_window(window);
@@ -234,9 +234,6 @@ void ETBApplication::on_action_print(const Glib::VariantBase& parameter)
 /* ----------------------------------------------------------------------------*/
 bool ETBApplication::show_user_face( const cv::Mat& gray )
 {
-    if( ! show_user_face_ )
-        show_icon( );
-
     cv::Mat face;
     if( gray.channels( ) == 1 )
         cv::cvtColor( gray, face, cv::COLOR_GRAY2BGR);
@@ -247,21 +244,20 @@ bool ETBApplication::show_user_face( const cv::Mat& gray )
     double fixedWidth = 150;
     cv::resize( face, face, cv::Size( fixedWidth, face.rows * fixedWidth / width ) );
 
-    auto pixbuf = Gdk::Pixbuf::create_from_data( face.data
+    auto pixbuf = Gdk::Pixbuf::create_from_data(face.data
             , Gdk::COLORSPACE_RGB, false
-            , 8, face.cols, face.rows, face.step 
-            );
-    image.set( pixbuf );
-    icon_is_set_ = false;
+            , 8, face.cols, face.rows, (int)face.step);
+    image_.set(pixbuf);
     return true;
 }
 
 bool ETBApplication::show_icon( )
 {
-    if( bfs::exists( ICONFILE_PATH ) )
+    auto iconPath = pConfigManager_->getIconpath();
+    if(bfs::exists(iconPath))
     {
-        auto pixbuf = Gdk::Pixbuf::create_from_file( ICONFILE_PATH, 150, 150 );
-        image.set( pixbuf );
+        auto pixbuf = Gdk::Pixbuf::create_from_file(iconPath.string(), 150, 150 );
+        image_.set( pixbuf );
         icon_is_set_ = true;
     }
     return true;
