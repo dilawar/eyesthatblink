@@ -16,14 +16,15 @@
 #ifndef INDICATOR_H
 #define INDICATOR_H
 
-#ifdef USE_APPINDICATOR 
+#ifdef USE_APPINDICATOR
 #include <gtk/gtk.h>
 #include <libappindicator/app-indicator.h>
 #endif
 
 string iconPath = "./data/icon.png";
-void init_indicator( int main, char** argc )
-{ 
+
+void init_indicator(int main, char **argc)
+{
     cout << "Constructing applet" << endl;
 
     GtkWidget *indicator_menu;
@@ -32,23 +33,20 @@ void init_indicator( int main, char** argc )
     AppIndicator *indicator;
     GError *error = NULL;
 
-    gtk_init( 0, NULL );
+    gtk_init(0, NULL);
 
-    indicator = app_indicator_new( 
-            "eyesthatblink"
-            , iconPath.c_str( )
-            , APP_INDICATOR_CATEGORY_APPLICATION_STATUS
-            );
+    indicator = app_indicator_new("eyesthatblink", iconPath.c_str(),
+                                  APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
 
-    app_indicator_set_status( indicator, APP_INDICATOR_STATUS_ACTIVE );
-    app_indicator_set_icon( indicator, iconPath.c_str( ) );
+    app_indicator_set_status(indicator, APP_INDICATOR_STATUS_ACTIVE);
+    app_indicator_set_icon(indicator, iconPath.c_str());
 
-    indicator_menu = gtk_menu_new( );
-    menuItem = gtk_menu_item_new_with_label( "menu1" );
+    indicator_menu = gtk_menu_new();
+    menuItem = gtk_menu_item_new_with_label("menu1");
 
-    // style 
+    // style
     GtkStyle *style;
-    style = gtk_rc_get_style( gtk_image_menu_item_new_with_mnemonic("a"));
+    style = gtk_rc_get_style(gtk_image_menu_item_new_with_mnemonic("a"));
 
     gtk_menu_shell_insert(GTK_MENU_SHELL(indicator_menu), menuItem, 0);
     gtk_widget_show(menuItem);
@@ -58,7 +56,4 @@ void init_indicator( int main, char** argc )
     gtk_widget_show_all(indicator_menu);
 }
 
-
-
- 
 #endif /* end of include guard: INDICATOR_H */

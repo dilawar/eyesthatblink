@@ -61,7 +61,7 @@ cv::Mat find_face(cv::Mat frame, int method = 1, bool show = false)
     {
         auto p = pConfigManager_->getCascadeFile(faceCascadeName_);
         if(! p.empty())
-            faceCascade_.load(p);
+            faceCascade_.load(p.string());
         return face;
     }
 
@@ -97,7 +97,8 @@ void reload_eye_cascade()
         pConfigManager_->getValue<bool>("global.user_has_small_eyes");
     bool wearingGlasses =
         pConfigManager_->getValue<bool>("global.user_wearing_glasses");
-    string cascadefile = pConfigManager_->getCascadeFile("haarcascade_eye.xml");
+
+    auto cascadefile = pConfigManager_->getCascadeFile("haarcascade_eye.xml");
 
     if (smallEyes)
         cascadefile = pConfigManager_->getCascadeFile(
@@ -108,7 +109,7 @@ void reload_eye_cascade()
             "haarcascade_eye_tree_eyeglasses.xml");
 
     LOG_DEBUG << "Changing cascade file to " << cascadefile;
-    bool res = eyeCascade_.load(cascadefile);
+    bool res = eyeCascade_.load(cascadefile.string());
     if (!res) {
         LOG_ERROR << "Failed to load " << cascadefile;
         throw runtime_error("failed to load cascade");

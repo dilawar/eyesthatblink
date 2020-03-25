@@ -258,9 +258,10 @@ bool ETBApplication::show_user_face( const cv::Mat& gray )
 
 bool ETBApplication::show_icon( )
 {
-    if( bfs::exists( ICONFILE_PATH ) )
+    auto iconPath = pConfigManager_->getIconpath();
+    if(bfs::exists(iconPath))
     {
-        auto pixbuf = Gdk::Pixbuf::create_from_file( ICONFILE_PATH, 150, 150 );
+        auto pixbuf = Gdk::Pixbuf::create_from_file(iconPath.string(), 150, 150 );
         image.set( pixbuf );
         icon_is_set_ = true;
     }

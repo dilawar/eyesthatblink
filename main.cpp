@@ -13,9 +13,9 @@
  *        License:  GNU GPL2
  */
 
-#include <iostream>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <iostream>
 
 #include "config.h"
 #include "core/globals.h"
@@ -40,21 +40,21 @@ int main(int argc, char* argv[])
 
     // Declare the supported options.
     po::options_description desc("Allowed options");
-    desc.add_options()
-        ("help,h", "produce help message")
-        ("configfile,c", po::value<string>(), "filepath of config file")
-        ("datadir,d", po::value<string>(), "directory containing application data.")
-        ;
+    desc.add_options()("help,h", "produce help message")(
+        "configfile,c", po::value<string>(), "filepath of config file")(
+        "datadir,d", po::value<string>(),
+        "directory containing application data.");
 
-    po::store(po::parse_command_line(argc, argv, desc), pConfigManager_->getCmdArgs());
+    po::store(po::parse_command_line(argc, argv, desc),
+              pConfigManager_->getCmdArgs());
     po::notify(pConfigManager_->getCmdArgs());
 
-    if(pConfigManager_->getCmdArgs().count("help")) {
+    if (pConfigManager_->getCmdArgs().count("help")) {
         cout << desc << endl;
-        return 1;
+        return 0;
     }
 
-    cout << "Starting application ... " << endl;
+    LOG_INFO << "Starting application ... " << endl;
 
     init_camera();
     unix_ui();

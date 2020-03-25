@@ -30,11 +30,12 @@ namespace po = boost::program_options;
 
 ConfigManager::ConfigManager()
 {
-    config_file_ = bfs::path(expand_user(CONFIG_FILE_PATH));
+    config_file_ = bfs::path(expand_user(CONFIG_FILEPATH));
     initialize();
 
     configTree_.put("global.fraction_eyelid_closed_time", 0.1f);
-    configTree_.put("global.icon_path", expand_user(ICONFILE_PATH));
+    configTree_.put("global.icon_name", expand_user(ICON_FILENAME));
+    configTree_.put("global.datadir", expand_user(APP_DATADIR));
     configTree_.put("global.blink_rate_per_minute", 10);
     configTree_.put("global.user_has_small_eyes", false);
     configTree_.put("global.user_wearing_glasses", false);
@@ -125,20 +126,21 @@ void ConfigManager::readConfigFile()
     boost::property_tree::read_ini(config_file_.c_str(), configTree_);
 }
 
-const string ConfigManager::getIconpath()
+const bfs::path ConfigManager::getIconpath()
 {
-    string iconPath = configTree_.get<string>("global.icon_path");
+    string iconName = configTree_.get<string>("global.icon_name");
 
-    if (iconPath.size() < 1) {
-        LOG_INFO << "Empty icon file path";
-        throw runtime_error("Iconpath is empty");
+    if (iconName.size() < 1) {
+        throw runtime_error("Name of icon is empty.");
     }
-    if (!boost::filesystem::exists(iconPath)) {
-        // Try another path from config.h file. Installation path.
-        iconPath = ICONFILE_PATH;
-        if (boost::filesystem::exists(iconPath)) return iconPath;
+    auto iconPath = bfs::path(APP_DATADIR) / bfs::path(iconName);
+    if (! boost::filesystem::exists(iconPath)) {
 
-        throw runtime_error("Icon file " + iconPath + " not found");
+        // Try another path from config.h file. Installation path.
+        if (boost::filesystem::exists(iconPath)) 
+            return iconPath;
+
+        throw runtime_error(iconPath.string() + " not found");
     }
 
     return iconPath;
@@ -156,7 +158,7 @@ const string ConfigManager::getIconpath()
  * @Returns
  */
 /* ----------------------------------------------------------------------------*/
-const string ConfigManager::getCascadeFile(const string& cascadeName)
+const bfs::path ConfigManager::getCascadeFile(const string& cascadeName)
 {
     // If datadir is passed from commandline. Search the directory.
     LOG_INFO << "Searching for " << cascadeName;
@@ -164,9 +166,9 @@ const string ConfigManager::getCascadeFile(const string& cascadeName)
     bfs::path path;
 
     if (cmdArgs_.count("datadir"))
-       path = bfs::path(cmdArgs_["datadir"].as<string>()) / bfs::path(cascadeName);
+       path = bfs::path(cmdArgs_["datadir"].as<string>())/ "cascades"/ bfs::path(cascadeName);
     else
-       path = bfs::path(CASCADE_INSTALL_DIR) / bfs::path(cascadeName);
+       path = bfs::path(APP_DATADIR) / "cascades" / bfs::path(cascadeName);
 
     if (bfs::exists(path)) return path.string();
 

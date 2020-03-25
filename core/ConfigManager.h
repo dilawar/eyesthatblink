@@ -45,9 +45,9 @@ public:
 
     void readConfigFile();
 
-    const string getIconpath();
+    const bfs::path getIconpath();
 
-    const string getCascadeFile(const string& cascadeName);
+    const bfs::path getCascadeFile(const string& cascadeName);
 
     template <typename T>
     void setValue(const string& key, const T value)

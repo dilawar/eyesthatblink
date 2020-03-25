@@ -67,8 +67,8 @@ ActionManager::ActionManager()
     blinks_.push_back( make_pair( start_time_,current_time_));
 
     // Initialize data file.
-    data_file_ = bfs::path( expand_user( DATA_FILE_PATH ) );
-    config_file_ = bfs::path( expand_user( CONFIG_FILE_PATH ) );
+    data_file_ = bfs::path( expand_user( DATA_FILEPATH ) );
+    config_file_ = bfs::path( expand_user( CONFIG_FILEPATH ) );
 
     LOG_INFO << "|| Initializing Action Manager";
 

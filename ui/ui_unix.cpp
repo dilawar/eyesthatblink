@@ -78,9 +78,6 @@ bool callback(int arg)
 /* ----------------------------------------------------------------------------*/
 int unix_ui()
 {
-    string iconPath = pConfigManager_->getIconpath();
-    LOG_INFO << "Using icon path " << iconPath;
-
     // Add a callback function.
     sigc::slot<bool> loop_slot = sigc::bind(sigc::ptr_fun(callback), 0);
 

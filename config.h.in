@@ -2,12 +2,14 @@
 #define CONFIG_H
 
 // Log file path.
-#define LOG_FILE_PATH           "@LOG_FILE_PATH@"
-#define AVG_BLINK_DURATION      @AVERAGE_BLINK_DURATION@
-#define ICONFILE_PATH           "@ICONFILE_INSTALL_PATH@"
-#define CASCADE_INSTALL_DIR     "@CASCADE_INSTALL_DIR@"
-#define DATA_FILE_PATH          "@DATA_FILE_PATH@"
-#define CONFIG_FILE_PATH        "@CONFIG_FILE_PATH@"
+#define LOG_FILEPATH            "@LOG_FILEPATH@"
+#define DATA_FILEPATH           "@DATA_FILEPATH@"
+#define CONFIG_FILEPATH         "@CONFIG_FILEPATH@"
+#define AVG_BLINK_DURATION       @AVERAGE_BLINK_DURATION@
+#define ICON_FILENAME           "@ICON_FILENAME@"
+#define APP_DATADIR             "@APP_DATADIR@"
 #define VERSION                 "@PROJECT_VERSION@"
+#define RUNTIME_CONFIG_DIR      "@RUNTIME_CONFIG_DIR@"
+#define RUNTIME_DATA_DIR        "@RUNTIME_DATA_DIR@"
 
 #endif /* end of include guard: CONFIG_H */
