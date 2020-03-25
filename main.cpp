@@ -16,7 +16,6 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include "plog/Log.h"
 
 #include "config.h"
 #include "core/globals.h"
@@ -24,18 +23,24 @@
 #include "core/main_loop.h"
 #include "ui/ui_unix.h"
 
+#include "plog/Log.h"
 
 using namespace std;
 
 namespace po = boost::program_options;
 
-extern boost::program_options::variables_map vm_;
+extern unique_ptr<ConfigManager> pConfigManager_;
 
 /**
  * @function main
  */
 int main(int argc, char* argv[])
 {
+    pConfigManager_.reset(new ConfigManager());
+    pActionManager_.reset(new ActionManager());
+
+    plog::init(plog::debug);
+
     // Declare the supported options.
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -44,18 +49,17 @@ int main(int argc, char* argv[])
         ("datadir,d", po::value<string>(), "directory containing application data.")
         ;
 
-    po::store(po::parse_command_line(argc, argv, desc), vm_);
-    po::notify(vm_);
+    po::store(po::parse_command_line(argc, argv, desc), pConfigManager_->getCmdArgs());
+    po::notify(pConfigManager_->getCmdArgs());
 
-    plog::init(plog::debug);
 
-    if(vm_.count("help")) {
+    if(pConfigManager_->getCmdArgs().count("help")) {
         cout << desc << endl;
         return 1;
     }
 
     init_camera();
-    unix_ui(argc, argv);
+    unix_ui();
     return 0;
 }
 

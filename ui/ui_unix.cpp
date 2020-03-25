@@ -36,9 +36,9 @@ extern bool finished_;
 
 extern double time_to_process_one_frame_;
 
-extern ConfigManager config_manager_;
-
 unique_ptr<ETBApplication> pApp_;
+
+extern unique_ptr<ConfigManager> pConfigManager_;
 
 static bool callback_started_ = false;
 
@@ -76,9 +76,9 @@ bool callback(int arg)
  * @Returns Infinite loop.
  */
 /* ----------------------------------------------------------------------------*/
-int unix_ui(int argc, char* argv[])
+int unix_ui()
 {
-    string iconPath = config_manager_.getIconpath();
+    string iconPath = pConfigManager_->getIconpath();
     LOG_INFO << "Using icon path " << iconPath;
 
     // Add a callback function.

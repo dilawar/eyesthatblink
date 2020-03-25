@@ -46,10 +46,7 @@ bool finished_ = false;
 bool small_eyes_ = false;
 bool wearing_glasses_ = false;
 
-ConfigManager config_manager_;
-
-ActionManager am_;
+unique_ptr<ConfigManager> pConfigManager_;
+unique_ptr<ActionManager> pActionManager_;
 
 cv::VideoCapture cap_;
-
-boost::program_options::variables_map vm_;

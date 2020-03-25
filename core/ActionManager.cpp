@@ -35,9 +35,9 @@
 #include "globals.h"
 #include "plog/Log.h"
 
-extern ConfigManager config_manager_;
-
 using namespace std;
+
+extern unique_ptr<ConfigManager> pConfigManager_;
 
 time_t getCurrentTime( )
 {
@@ -99,7 +99,7 @@ void ActionManager::initialize( void )
         modification_times_[1] = getCurrentTime( );
     }
 
-    cout << "Blink threshold is " << config_manager_.getBlinkThreshold( ) << endl;
+    cout << "Blink threshold is " << pConfigManager_->getBlinkThreshold( ) << endl;
     brightness_ = 0.0;
     displays_ = find_display( );
     if( displays_.size( ) > 0 )
@@ -268,12 +268,12 @@ void ActionManager::insert_state( const time_type_& t, const status_t_ st )
         return;
 
     // Compare so  we can alert the user.
-    if( running_avg_activity_in_interval_ < config_manager_.getBlinkThreshold( ) )
+    if( running_avg_activity_in_interval_ < pConfigManager_->getBlinkThreshold( ) )
     {
         if( diff_in_ms( t, last_nofified_on ) > 10000 )
         {
             LOG_INFO << "Alerting user. Threshold " 
-                     << config_manager_.getBlinkThreshold( );
+                     << pConfigManager_->getBlinkThreshold( );
 
             alert(  "You are not blinking enough" );
             last_nofified_on = t;
@@ -336,7 +336,7 @@ void ActionManager::update_config_file( )
     {
         cout << "Update config file. " << endl;
         // And reload the config file.
-        config_manager_.readConfigFile( );
+        pConfigManager_->readConfigFile( );
 
         // To be sure lets not rewrite it.
         modification_times_[0] = modification_times_[1];
@@ -350,7 +350,7 @@ void ActionManager::linux_set_brightness( double frac )
     if( frac < 0.0 )
     {
         delta = max(0.0, 
-            running_avg_activity_in_interval_ - config_manager_.getBlinkThreshold( ) 
+            running_avg_activity_in_interval_ - pConfigManager_->getBlinkThreshold( ) 
             );
         brightness = 10 * delta + 0.5;
     }

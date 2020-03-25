@@ -19,21 +19,22 @@ using namespace std;
 #include "etbapplication.h"
 #include "etbwindow.h"
 #include "plog/Log.h"
+#include "../core/main_loop.h"
 #include "../core/ConfigManager.h"
 
 namespace bfs = boost::filesystem;
 
-extern ConfigManager config_manager_;
+extern unique_ptr<ConfigManager> pConfigManager_;
 
 ETBApplication::ETBApplication() : Gtk::Application("org.dilawar.application")
 {
     try {
         // Load default values.
-        show_user_face_ = config_manager_.getValue<bool>( 
+        show_user_face_ = pConfigManager_->getValue<bool>( 
                 "global.show_user_face" );
-        user_has_small_eyes_ = config_manager_.getValue<bool>( 
+        user_has_small_eyes_ = pConfigManager_->getValue<bool>( 
                 "global.user_has_small_eyes" );
-        user_wearning_glasses_ = config_manager_.getValue<bool>( 
+        user_wearning_glasses_ = pConfigManager_->getValue<bool>( 
                 "global.user_wearning_glasses"); 
     } catch( std::exception& e ) {
         LOG_INFO << "Failed to load configuration values" <<  e.what() << endl;
@@ -41,8 +42,7 @@ ETBApplication::ETBApplication() : Gtk::Application("org.dilawar.application")
         user_has_small_eyes_ = false;
         user_wearning_glasses_ = false;
     }
-
-    // Glib::set_application_name("Eyes That Blink");
+    Glib::set_application_name("Eyes That Blink");
 }
 
 ETBApplication* ETBApplication::create()
@@ -53,9 +53,9 @@ ETBApplication* ETBApplication::create()
 void ETBApplication::setSmallEyeOption( )
 {
     bool value = smallEye.get_active( );
-    config_manager_.setValue<bool>( "global.user_has_small_eyes", value );
+    pConfigManager_->setValue<bool>( "global.user_has_small_eyes", value );
     reload_eye_cascade( );
-    config_manager_.writeConfigFile( );
+    pConfigManager_->writeConfigFile( );
 }
 
 
@@ -63,9 +63,9 @@ void ETBApplication::setEyeGlassOption( )
 {
     bool value = glasses.get_active( );
     LOG_INFO << "Setting 'user wearing glasses?' to " << value;
-    config_manager_.setValue<bool>( "global.user_wearing_glasses", value );
+    pConfigManager_->setValue<bool>( "global.user_wearing_glasses", value );
     reload_eye_cascade( );
-    config_manager_.writeConfigFile( );
+    pConfigManager_->writeConfigFile( );
 }
 
 /* --------------------------------------------------------------------------*/
@@ -79,7 +79,7 @@ void ETBApplication::setShowUserFace( )
 {
     LOG_INFO << "Toggling show user face ";
     bool val = ! show_user_face_;
-    config_manager_.setValue<bool>( "global.show_user_face", val );
+    pConfigManager_->setValue<bool>( "global.show_user_face", val );
     show_user_face_ = val;
 }
 
@@ -101,8 +101,8 @@ void ETBApplication::setBlinkThresholdValue( )
 {
     double value = threshold.get_value( );
     LOG_INFO << "Setting threshold value to " << value;
-    config_manager_.setBlinkThreshold( value );
-    config_manager_.writeConfigFile( );
+    pConfigManager_->setBlinkThreshold( value );
+    pConfigManager_->writeConfigFile( );
 }
 
 
@@ -125,11 +125,11 @@ void ETBApplication::create_window()
 
     // Small eyes button.
     smallEye.set_label( "Small eyes" );
-    if( config_manager_.getValue<bool>( "global.user_has_small_eyes" ) == true )
+    if( pConfigManager_->getValue<bool>( "global.user_has_small_eyes" ) == true )
         smallEye.set_active( );
 
     showUserFace.set_label( "Show my face" );
-    showUserFace.set_active( config_manager_.getValue<bool>( "global.show_user_face" ) );
+    showUserFace.set_active( pConfigManager_->getValue<bool>( "global.show_user_face" ) );
     showUserFace.signal_toggled( ).connect( 
             sigc::mem_fun( *this, &ETBApplication::setShowUserFace )
             );
@@ -145,7 +145,7 @@ void ETBApplication::create_window()
     // Glasses.
     glasses.set_label( "Wearing glasses? " );
     glasses.set_active( 
-            config_manager_.getValue<bool>( "global.user_wearing_glasses" )
+            pConfigManager_->getValue<bool>( "global.user_wearing_glasses" )
             );
 
     glasses.signal_toggled( ).connect( 
@@ -159,7 +159,7 @@ void ETBApplication::create_window()
     thresBox.pack_start( label ); 
 
     threshold.set_range( 10, 20);
-    threshold.set_value( config_manager_.getBlinkPerMinuteThreshold( ) );
+    threshold.set_value( pConfigManager_->getBlinkPerMinuteThreshold( ) );
 
     threshold.signal_value_changed( ).connect( 
                 sigc::mem_fun( *this, &ETBApplication::setBlinkThresholdValue )

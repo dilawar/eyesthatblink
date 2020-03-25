@@ -14,6 +14,7 @@
  */
 
 #include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 #include <fstream>
 #include <iostream>
 
@@ -23,15 +24,15 @@
 #include "../config.h"
 #include "plog/Log.h"
 
+
 namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
-
-extern po::variables_map vm_;
 
 ConfigManager::ConfigManager()
 {
     config_file_ = bfs::path(expand_user(CONFIG_FILE_PATH));
     initialize();
+
     configTree_.put("global.fraction_eyelid_closed_time", 0.1f);
     configTree_.put("global.icon_path", expand_user(ICONFILE_PATH));
     configTree_.put("global.blink_rate_per_minute", 10);
@@ -47,7 +48,8 @@ ConfigManager::ConfigManager()
         }
         catch (...) {
             // delete the file.
-            LOG_WARNING << "Removing badly formatted config file " << config_file_;
+            LOG_WARNING << "Removing badly formatted config file "
+                        << config_file_;
             bfs::remove(config_file_);
             writeConfigFile();
         }
@@ -56,14 +58,15 @@ ConfigManager::ConfigManager()
         LOG_DEBUG << "Writing config file to " << config_file_;
         writeConfigFile();
     }
+
+    LOG_DEBUG << "ConfigManager is initialized" << endl;
 }
 
 void ConfigManager::initialize()
 {
     if (!bfs::exists(config_file_)) {
         auto res = bfs::create_directories(config_file_.parent_path());
-        LOG_INFO
-            << "Created " << config_file_.parent_path() << "? " << res;
+        LOG_INFO << "Created " << config_file_.parent_path() << "? " << res;
     }
 }
 
@@ -96,7 +99,7 @@ double ConfigManager::getBlinkPerMinuteThreshold()
 void ConfigManager::setBlinkThreshold(double blinkratePerMinute)
 {
     LOG_INFO << "Setting blink threshold to " << blinkratePerMinute
-              << " blinks/minute";
+             << " blinks/minute";
     configTree_.put("global.blink_rate_per_minute", blinkratePerMinute);
 
     // Blink threshold is fraction of time, eye lids are closed.
@@ -159,10 +162,11 @@ const string ConfigManager::getCascadeFile(const string& cascadeName)
     LOG_INFO << "Searching for " << cascadeName;
 
     bfs::path path;
-    if (vm_.count("datadir"))
-        path = bfs::path(vm_["datadir"].as<string>()) / bfs::path(cascadeName);
+
+    if (cmdArgs_.count("datadir"))
+       path = bfs::path(cmdArgs_["datadir"].as<string>()) / bfs::path(cascadeName);
     else
-        path = bfs::path(CASCADE_INSTALL_DIR) / bfs::path(cascadeName);
+       path = bfs::path(CASCADE_INSTALL_DIR) / bfs::path(cascadeName);
 
     if (bfs::exists(path)) return path.string();
 
@@ -172,3 +176,7 @@ const string ConfigManager::getCascadeFile(const string& cascadeName)
                         path.string());
 }
 
+boost::program_options::variables_map& ConfigManager::getCmdArgs()
+{
+    return cmdArgs_;
+}

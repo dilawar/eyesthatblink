@@ -32,15 +32,15 @@
 
 namespace bfs = boost::filesystem;
 
-extern ConfigManager config_manager_;
-extern ActionManager am_;
+extern unique_ptr<ConfigManager> pConfigManager_;
+extern unique_ptr<ActionManager> pActionManager_;
 
 extern cv::VideoCapture cap_;
 
 auto t_ = std::chrono::system_clock::now( );
 
-cv::String face_cascade_name = config_manager_.getCascadeFile( "haarcascade_frontalface_alt2.xml");
-cv::String eye_cascade_name = config_manager_.getCascadeFile( "haarcascade_eye.xml" );
+cv::String face_cascade_name = pConfigManager_->getCascadeFile( "haarcascade_frontalface_alt2.xml");
+cv::String eye_cascade_name = pConfigManager_->getCascadeFile( "haarcascade_eye.xml" );
 
 cv::CascadeClassifier face_cascade( face_cascade_name );
 cv::CascadeClassifier eye_cascade( eye_cascade_name );
@@ -90,15 +90,15 @@ cv::Mat find_face( cv::Mat frame, int method = 1, bool show = false )
 /* ----------------------------------------------------------------------------*/
 void reload_eye_cascade(  )
 {
-    bool smallEyes = config_manager_.getValue<bool>( "global.user_has_small_eyes" );
-    bool wearingGlasses = config_manager_.getValue<bool>( "global.user_wearing_glasses" );
-    string cascadefile = config_manager_.getCascadeFile( "haarcascade_eye.xml" );
+    bool smallEyes = pConfigManager_->getValue<bool>( "global.user_has_small_eyes" );
+    bool wearingGlasses = pConfigManager_->getValue<bool>( "global.user_wearing_glasses" );
+    string cascadefile = pConfigManager_->getCascadeFile( "haarcascade_eye.xml" );
 
     if( smallEyes )
-        cascadefile = config_manager_.getCascadeFile( "haarcascade_mcs_eyepair_small.xml" );
+        cascadefile = pConfigManager_->getCascadeFile( "haarcascade_mcs_eyepair_small.xml" );
 
     if( wearingGlasses )
-        cascadefile = config_manager_.getCascadeFile( "haarcascade_eye_tree_eyeglasses.xml" );
+        cascadefile = pConfigManager_->getCascadeFile( "haarcascade_eye_tree_eyeglasses.xml" );
 
     LOG_DEBUG << "Changing cascade file to " << cascadefile;
     bool res = eye_cascade.load( cascadefile );
@@ -195,16 +195,16 @@ bool process_frame(  )
              *------------------------------------------------------------*/
             bool islocated = locate_pupil( face );
             if( ! islocated )
-                am_.insert_state( t_, CLOSE );
+                pActionManager_->insert_state( t_, CLOSE );
             else
-                am_.insert_state( t_, OPEN );
+                pActionManager_->insert_state( t_, OPEN );
 
             // Show eyes only in debug mode.
-            if( config_manager_.getValue<bool>( "global.show_user_face" ) )
+            if( pConfigManager_->getValue<bool>( "global.show_user_face" ) )
             {
-                string msg = std::to_string( am_.n_blinks_ );
-                msg += "," + std::to_string( am_.running_avg_activity_ );
-                msg += "," + std::to_string( am_.running_avg_activity_in_interval_ );
+                string msg = std::to_string( pActionManager_->n_blinks_ );
+                msg += "," + std::to_string( pActionManager_->running_avg_activity_ );
+                msg += "," + std::to_string( pActionManager_->running_avg_activity_in_interval_ );
 
                 // Show the face with rectangle drawn on them.
                 cv::rectangle( face, eye_rects_[ 0 ], 255, 1 );
@@ -226,7 +226,7 @@ bool process_frame(  )
     }
     else
     {
-        am_.insert_state( t_, AWAY );
+        pActionManager_->insert_state( t_, AWAY );
         LOG_INFO << "Empty frame";
     }
 
@@ -261,5 +261,5 @@ void close_camera( )
 
 void update_config_file( )
 {
-    am_.update_config_file( );
+    pActionManager_->update_config_file( );
 }

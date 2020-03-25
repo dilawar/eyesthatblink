@@ -31,7 +31,6 @@
 #include "ConfigManager.h"
 #include "ActionManager.h"
 
-
 extern bool away_;
 extern double fps_;
 extern size_t total_frames_;
@@ -58,12 +57,10 @@ extern bool finished_;
 // Small eyes.
 extern bool small_eyes_;
 
-extern ConfigManager config_manager_;
-
-extern ActionManager am_;
+extern unique_ptr<ConfigManager> pConfigManager_;
+extern unique_ptr<ActionManager> pActionManager_;
 
 extern cv::VideoCapture cap_;
 
-extern boost::program_options::variables_map vm_;
 
 #endif   /* ----- #ifndef globals_INC  ----- */
