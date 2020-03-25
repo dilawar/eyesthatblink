@@ -38,7 +38,7 @@ extern unique_ptr<ConfigManager> pConfigManager_;
 int main(int argc, char* argv[])
 {
     static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;
-    plog::init(plog::debug, &consoleAppender);
+    plog::init(plog::info, &consoleAppender);
 
     // Declare the supported options.
     po::options_description desc("Allowed options");
