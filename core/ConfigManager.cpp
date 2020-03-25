@@ -24,7 +24,6 @@
 #include "../config.h"
 #include "plog/Log.h"
 
-
 namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
 
@@ -39,7 +38,7 @@ ConfigManager::ConfigManager()
     configTree_.put("global.blink_rate_per_minute", 10);
     configTree_.put("global.user_has_small_eyes", false);
     configTree_.put("global.user_wearing_glasses", false);
-    configTree_.put("global.show_user_face", false);
+    configTree_.put("global.show_user_face", true);
 
     // Check if config file exists. If yes then populate the map.
     if (boost::filesystem::exists(config_file_)) {
@@ -134,11 +133,9 @@ const bfs::path ConfigManager::getIconpath()
         throw runtime_error("Name of icon is empty.");
     }
     auto iconPath = bfs::path(APP_DATADIR) / bfs::path(iconName);
-    if (! boost::filesystem::exists(iconPath)) {
-
+    if (!boost::filesystem::exists(iconPath)) {
         // Try another path from config.h file. Installation path.
-        if (boost::filesystem::exists(iconPath)) 
-            return iconPath;
+        if (boost::filesystem::exists(iconPath)) return iconPath;
 
         throw runtime_error(iconPath.string() + " not found");
     }
@@ -166,9 +163,10 @@ const bfs::path ConfigManager::getCascadeFile(const string& cascadeName)
     bfs::path path;
 
     if (cmdArgs_.count("datadir"))
-       path = bfs::path(cmdArgs_["datadir"].as<string>())/ "cascades"/ bfs::path(cascadeName);
+        path = bfs::path(cmdArgs_["datadir"].as<string>()) / "cascades" /
+               bfs::path(cascadeName);
     else
-       path = bfs::path(APP_DATADIR) / "cascades" / bfs::path(cascadeName);
+        path = bfs::path(APP_DATADIR) / "cascades" / bfs::path(cascadeName);
 
     if (bfs::exists(path)) return path.string();
 

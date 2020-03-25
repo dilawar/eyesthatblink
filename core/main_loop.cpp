@@ -57,11 +57,9 @@ cv::Mat find_face(cv::Mat frame, int method = 1, bool show = false)
     auto t0 = std::chrono::system_clock::now();
     cv::Mat face;
 
-    if(faceCascade_.empty())
-    {
+    if (faceCascade_.empty()) {
         auto p = pConfigManager_->getCascadeFile(faceCascadeName_);
-        if(! p.empty())
-            faceCascade_.load(p.string());
+        if (!p.empty()) faceCascade_.load(p.string());
         return face;
     }
 
@@ -123,8 +121,7 @@ void reload_eye_cascade()
  */
 bool locate_pupil(const cv::Mat face)
 {
-    if(eyeCascade_.empty())
-        return false;
+    if (eyeCascade_.empty()) return false;
 
     auto t0 = std::chrono::system_clock::now();
     vector<cv::Rect> eyes;
@@ -170,67 +167,68 @@ bool process_frame()
 {
     cap_.read(frame_);
 
-    if (!frame_.empty()) {
-        // Resize the frame. Resizing the frame to half speeds up the whole
-        // process.
-        cv::Mat face;
-        double rescaleFactor = 600.0 / frame_.cols;
-        cv::resize(frame_, frame_, cv::Size(0, 0), rescaleFactor,
-                   rescaleFactor);
+
+    if (frame_.empty()) return false;
+
+    // Resize the frame. Resizing the frame to half speeds up the whole
+    // process.
+    cv::Mat face;
+    double rescaleFactor = 600.0 / frame_.cols;
+    cv::resize(frame_, frame_, cv::Size(0, 0), rescaleFactor, rescaleFactor);
 
 #if 1
-        // Detecting pupil directly is enough.
-        face = find_face(frame_);
+    // Detecting pupil directly is enough.
+    face = find_face(frame_);
 #else
-        face = frame_;
+    face = frame_;
 #endif
-
-        if (!face.empty()) {
-            crop_face(face);
-            preprocess(face);
-
-            // Here is a blink. Save the timestamp.
-            t_ = std::chrono::system_clock::now();
-            total_frames_ += 1;
-
-            /*--------------------------------------------------------------
-             *  Generate tempalte for pupil. If it has not been generated.
-             *------------------------------------------------------------*/
-            bool islocated = locate_pupil(face);
-            if (!islocated)
-                pActionManager_->insert_state(t_, CLOSE);
-            else
-                pActionManager_->insert_state(t_, OPEN);
-
-            // Show eyes only in debug mode.
-            if (pConfigManager_->getValue<bool>("global.show_user_face")) {
-                string msg = std::to_string(pActionManager_->n_blinks_);
-                msg += "," +
-                       std::to_string(pActionManager_->running_avg_activity_);
-                msg += "," +
-                       std::to_string(
-                           pActionManager_->running_avg_activity_in_interval_);
-
-                // Show the face with rectangle drawn on them.
-                cv::rectangle(face, eye_rects_[0], 255, 1);
-                cv::rectangle(face, eye_rects_[1], 255, 1);
-                cv::putText(face, msg, cv::Point(10, 10),
-                            cv::FONT_HERSHEY_SIMPLEX, 0.3, 255);
-
-                // Show user face in UI.
-                show_user_face(face);
-            }
-            else {
-                show_icon();
-            }
-        }
-        else
-            LOG_INFO << "No face found.";
-    }
-    else {
+    if (face.empty()) {
         pActionManager_->insert_state(t_, AWAY);
         LOG_INFO << "Empty frame";
+        return false;
     }
+
+    crop_face(face);
+    preprocess(face);
+
+    // cv::imshow("win", face);
+    // cv::waitKey(1);
+
+    // Here is a blink. Save the timestamp.
+    t_ = std::chrono::system_clock::now();
+    total_frames_ += 1;
+
+    /*--------------------------------------------------------------
+     *  Generate tempalte for pupil. If it has not been generated.
+     *------------------------------------------------------------*/
+    bool islocated = locate_pupil(face);
+    if (!islocated)
+        pActionManager_->insert_state(t_, CLOSE);
+    else
+        pActionManager_->insert_state(t_, OPEN);
+
+    // Show eyes only in debug mode.
+    if (pConfigManager_->getValue<bool>("global.show_user_face")) {
+        string msg = std::to_string(pActionManager_->n_blinks_);
+        msg += "," + std::to_string(pActionManager_->running_avg_activity_);
+        msg += "," + std::to_string(
+                         pActionManager_->running_avg_activity_in_interval_);
+
+        // Show the face with rectangle drawn on them.
+        cv::rectangle(face, eye_rects_[0], 255, 1);
+        cv::rectangle(face, eye_rects_[1], 255, 1);
+        cv::putText(face, msg, cv::Point(10, 10), cv::FONT_HERSHEY_SIMPLEX, 0.3,
+                    255);
+
+        // Show user face in UI.
+        LOG_INFO << "Showing user face." << endl;
+        show_user_face(face);
+    }
+    else {
+        show_icon();
+    }
+
+    show_user_face(face);
 
     return true;
 }

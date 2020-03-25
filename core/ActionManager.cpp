@@ -277,12 +277,12 @@ void ActionManager::insert_state( const time_type_& t, const status_t_ st )
 
             alert(  "You are not blinking enough" );
             last_nofified_on = t;
-            linux_set_brightness( );
+            // linux_set_brightness( );
         }
     }
     else
     {
-        linux_set_brightness( );
+        // linux_set_brightness( );
     }
 }
 

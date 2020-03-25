@@ -47,8 +47,7 @@ bool callback(int arg)
     // If callback_started_ is still true that means previous call is not
     // complete yet. Don't do anything till previous call returns.
     if (callback_started_) {
-        cout << '|';
-        cout.flush();
+        cout << 'x'; cout.flush();
         return true;
     }
 
@@ -79,10 +78,9 @@ bool callback(int arg)
 int unix_ui()
 {
     // Add a callback function.
-    sigc::slot<bool> loop_slot = sigc::bind(sigc::ptr_fun(callback), 0);
+    sigc::slot<bool> slot = sigc::bind(sigc::ptr_fun(callback), 0);
+    Glib::signal_timeout().connect(slot, 200);
 
-    // Call every 100 ms and no earlier.
-    sigc::connection conn = Glib::signal_timeout().connect( loop_slot, 150 );
     pApp_.reset(ETBApplication::create());
     pApp_->run(pApp_->getWindow());
     return 1;

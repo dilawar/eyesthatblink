@@ -121,7 +121,7 @@ void ETBApplication::create_window()
                 )
             );
     // Table.
-    table.resize( 8, 1 );
+    table_.resize( 8, 1 );
 
     // Small eyes button.
     smallEye.set_label( "Small eyes" );
@@ -134,13 +134,13 @@ void ETBApplication::create_window()
             sigc::mem_fun( *this, &ETBApplication::setShowUserFace )
             );
     showUserFace.show( );
-    table.attach( showUserFace, 0, 1, 0, 1 );
+    table_.attach( showUserFace, 0, 1, 0, 1 );
 
     smallEye.signal_toggled( ).connect( 
             sigc::mem_fun( *this, &ETBApplication::setSmallEyeOption )
             );
     smallEye.show( );
-    table.attach( smallEye, 0, 1, 1, 2 );
+    table_.attach( smallEye, 0, 1, 1, 2 );
 
     // Glasses.
     glasses.set_label( "Wearing glasses? " );
@@ -152,7 +152,7 @@ void ETBApplication::create_window()
             sigc::mem_fun( *this, &ETBApplication::setEyeGlassOption )
             );
     glasses.show( );
-    table.attach( glasses, 0, 1, 2, 3);
+    table_.attach( glasses, 0, 1, 2, 3);
 
     label.set_label( "Blinks per min" );
     label.show( );
@@ -166,14 +166,14 @@ void ETBApplication::create_window()
             );
     thresBox.pack_start( threshold );
     threshold.show( );
-    table.attach( thresBox, 0, 1, 3, 4);
+    table_.attach( thresBox, 0, 1, 3, 4);
     thresBox.show( );
 
-    table.attach( image, 0, 1, 4, 7);
-    image.show( );
+    table_.attach( image_, 0, 1, 4, 7);
+    image_.show( );
 
-    window.add( table );
-    table.show( );
+    window.add( table_ );
+    table_.show( );
 
     // Make sure that the application runs for as long this window is 
     add_window(window);
@@ -234,9 +234,6 @@ void ETBApplication::on_action_print(const Glib::VariantBase& parameter)
 /* ----------------------------------------------------------------------------*/
 bool ETBApplication::show_user_face( const cv::Mat& gray )
 {
-    if( ! show_user_face_ )
-        show_icon( );
-
     cv::Mat face;
     if( gray.channels( ) == 1 )
         cv::cvtColor( gray, face, cv::COLOR_GRAY2BGR);
@@ -247,12 +244,10 @@ bool ETBApplication::show_user_face( const cv::Mat& gray )
     double fixedWidth = 150;
     cv::resize( face, face, cv::Size( fixedWidth, face.rows * fixedWidth / width ) );
 
-    auto pixbuf = Gdk::Pixbuf::create_from_data( face.data
+    auto pixbuf = Gdk::Pixbuf::create_from_data(face.data
             , Gdk::COLORSPACE_RGB, false
-            , 8, face.cols, face.rows, face.step 
-            );
-    image.set( pixbuf );
-    icon_is_set_ = false;
+            , 8, face.cols, face.rows, (int)face.step);
+    image_.set(pixbuf);
     return true;
 }
 
@@ -262,7 +257,7 @@ bool ETBApplication::show_icon( )
     if(bfs::exists(iconPath))
     {
         auto pixbuf = Gdk::Pixbuf::create_from_file(iconPath.string(), 150, 150 );
-        image.set( pixbuf );
+        image_.set( pixbuf );
         icon_is_set_ = true;
     }
     return true;
