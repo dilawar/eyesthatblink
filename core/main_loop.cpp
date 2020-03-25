@@ -181,7 +181,7 @@ bool process_frame()
     double rescaleFactor = 800.0 / frame_.cols;
     // cv::resize(frame_, frame_, cv::Size(0, 0), rescaleFactor, rescaleFactor);
 
-#if 0
+#if 1
     face = find_face(frame_);
     if (face.empty()) {
         pActionManager_->insert_state(t_, AWAY);
@@ -190,6 +190,7 @@ bool process_frame()
     }
 #else
     // Detecting pupil directly is enough.
+    // No. Detecthing face before detecting pupil is faster.
     face = frame_;
 #endif
     preprocess(face);
@@ -220,8 +221,6 @@ bool process_frame()
             << "|" << pActionManager_->running_avg_activity_in_interval_
             ;
 
-        cout << " -- " << msg.str() << endl;
-
         // Show the face with rectangle drawn on them.
         cv::rectangle(face, eye_rects_[0], 255, 1);
         cv::rectangle(face, eye_rects_[1], 255, 1);
@@ -229,7 +228,7 @@ bool process_frame()
                 , 1, 255);
 
         // Show user face in UI.
-        LOG_INFO << "Showing user face." << endl;
+        // LOG_DEBUG << "Showing user face." << endl;
         show_user_face(face);
     }
     else {

@@ -51,14 +51,15 @@ bool fetch_and_process(int arg)
     }
 
     wait = true;
-    //auto t0 = std::chrono::system_clock::now();
-    process_frame();
-    //auto t1 = std::chrono::system_clock::now();
-    //time_to_process_one_frame_ = diff_in_ms(t1, t0);
 
-    // std::this_thread::sleep_for(std::chrono::milliseconds(
-    //     max(10, 100 - (int)time_to_process_one_frame_)));
+    auto t0 = std::chrono::system_clock::now();
+    process_frame();
+    auto t1 = std::chrono::system_clock::now();
+    time_to_process_one_frame_ = diff_in_ms(t1, t0);
     wait = false;
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(
+        max(10, 100 - (int)time_to_process_one_frame_)));
 
     return true;
 }

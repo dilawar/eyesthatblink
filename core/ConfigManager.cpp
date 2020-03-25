@@ -35,10 +35,10 @@ ConfigManager::ConfigManager()
     configTree_.put("global.fraction_eyelid_closed_time", 0.1f);
     configTree_.put("global.icon_name", expand_user(ICON_FILENAME));
     configTree_.put("global.datadir", expand_user(APP_DATADIR));
-    configTree_.put("global.blink_rate_per_minute", 10);
+    configTree_.put("global.blink_rate_per_minute", 13);
     configTree_.put("global.user_has_small_eyes", false);
     configTree_.put("global.user_wearing_glasses", false);
-    configTree_.put("global.show_user_face", true);
+    configTree_.put("global.show_user_face", false);
 
     // Check if config file exists. If yes then populate the map.
     if (boost::filesystem::exists(config_file_)) {
@@ -55,7 +55,6 @@ ConfigManager::ConfigManager()
         }
     }
     else {
-        LOG_DEBUG << "Writing config file to " << config_file_;
         writeConfigFile();
     }
 

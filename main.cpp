@@ -23,7 +23,8 @@
 #include "core/main_loop.h"
 #include "ui/ui_unix.h"
 
-#include "../external/plog/include/plog/Log.h"
+#include "plog/Log.h"
+#include "plog/Appenders/ConsoleAppender.h"
 
 using namespace std;
 
