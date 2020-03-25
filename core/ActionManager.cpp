@@ -33,6 +33,7 @@
 #endif
 
 #include "globals.h"
+#include "plog/Log.h"
 
 extern ConfigManager config_manager_;
 
@@ -367,7 +368,7 @@ void ActionManager::linux_set_brightness( double frac )
     stringstream ss;
     ss << bg;
     const char* perc = ss.str( ).c_str( );
-    LOG_DEBUG << "XBACKLIGHT Setting brightness to " << perc;
+    LOG_INFO << "XBACKLIGHT Setting brightness to " << perc;
 
     std::vector<const char*> args = { "xbacklight", "-set", perc };
     std::async( std::launch::async

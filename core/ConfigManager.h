@@ -16,14 +16,12 @@
 #ifndef CONFIGMANAGER_H
 #define CONFIGMANAGER_H
 
-#include <string>
-#include <map>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/filesystem.hpp>
+#include <map>
 
 #include "../config.h"
-#include "plog/Log.h"
 
 using namespace std;
 

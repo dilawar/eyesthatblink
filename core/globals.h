@@ -24,9 +24,9 @@
 #define VERY_LOW_THRESHOLD          0.020
 
 #include "opencv2/opencv.hpp"
-
 #include <chrono>
 #include <array>
+#include <boost/program_options.hpp>
 
 #include "ConfigManager.h"
 #include "ActionManager.h"
@@ -64,6 +64,6 @@ extern ActionManager am_;
 
 extern cv::VideoCapture cap_;
 
-// Logging to file.
+extern boost::program_options::variables_map vm_;
 
 #endif   /* ----- #ifndef globals_INC  ----- */

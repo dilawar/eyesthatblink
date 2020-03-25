@@ -20,7 +20,6 @@
 #include "globals.h"
 #include "opencv2/opencv.hpp"
 
-
 bool away_ = false;
 double fps_ = 20.0;
 
@@ -52,3 +51,5 @@ ConfigManager config_manager_;
 ActionManager am_;
 
 cv::VideoCapture cap_;
+
+boost::program_options::variables_map vm_;

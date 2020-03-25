@@ -14,6 +14,10 @@
  */
 
 #include <iostream>
+#include <boost/filesystem.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/objdetect.hpp>
+
 
 #include "main_loop.h"
 #include "blink_detector.hpp"
@@ -21,14 +25,8 @@
 #include "globals.h"
 #include "ActionManager.h"
 #include "ConfigManager.h"
-#include <boost/filesystem.hpp>
 
-#if OPENCV_VERSION_MAJOR==3
-#include <opencv2/highgui.hpp>
-#include <opencv2/objdetect.hpp>
-#else
-#include <opencv2/highgui/highgui.hpp>
-#endif
+#include "plog/Log.h"
 
 #include "../ui/ui.h"
 
@@ -242,7 +240,7 @@ bool process_frame(  )
 /* ----------------------------------------------------------------------------*/
 void init_camera( )
 {
-    cap_ = cv::VideoCapture(0, cv::CAP_V4L);
+    cap_ = cv::VideoCapture(0);
     if( ! cap_.isOpened( ) )
     {
         LOG_ERROR << "Failed to open default camera. Existing ... " << endl;
