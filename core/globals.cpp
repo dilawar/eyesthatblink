@@ -17,8 +17,10 @@
  * =====================================================================================
  */
 
-#include "globals.h"
+#include <memory>
 #include "opencv2/opencv.hpp"
+
+#include "globals.h"
 
 bool away_ = false;
 double fps_ = 20.0;
@@ -46,7 +48,7 @@ bool finished_ = false;
 bool small_eyes_ = false;
 bool wearing_glasses_ = false;
 
-unique_ptr<ConfigManager> pConfigManager_;
-unique_ptr<ActionManager> pActionManager_;
+std::unique_ptr<ConfigManager> pConfigManager_(new ConfigManager());
+std::unique_ptr<ActionManager> pActionManager_(new ActionManager());
 
 cv::VideoCapture cap_;

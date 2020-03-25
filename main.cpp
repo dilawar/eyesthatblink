@@ -36,9 +36,6 @@ extern unique_ptr<ConfigManager> pConfigManager_;
  */
 int main(int argc, char* argv[])
 {
-    pConfigManager_.reset(new ConfigManager());
-    pActionManager_.reset(new ActionManager());
-
     plog::init(plog::debug);
 
     // Declare the supported options.
@@ -52,11 +49,12 @@ int main(int argc, char* argv[])
     po::store(po::parse_command_line(argc, argv, desc), pConfigManager_->getCmdArgs());
     po::notify(pConfigManager_->getCmdArgs());
 
-
     if(pConfigManager_->getCmdArgs().count("help")) {
         cout << desc << endl;
         return 1;
     }
+
+    cout << "Starting application ... " << endl;
 
     init_camera();
     unix_ui();

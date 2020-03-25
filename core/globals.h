@@ -23,13 +23,14 @@
 #define LOW_THRESHOLD               0.100
 #define VERY_LOW_THRESHOLD          0.020
 
-#include "opencv2/opencv.hpp"
+#include <opencv2/opencv.hpp>
 #include <chrono>
 #include <array>
+#include <memory>
 #include <boost/program_options.hpp>
 
-#include "ConfigManager.h"
-#include "ActionManager.h"
+#include "../core/ActionManager.h"
+#include "../core/ConfigManager.h"
 
 extern bool away_;
 extern double fps_;
@@ -57,8 +58,8 @@ extern bool finished_;
 // Small eyes.
 extern bool small_eyes_;
 
-extern unique_ptr<ConfigManager> pConfigManager_;
-extern unique_ptr<ActionManager> pActionManager_;
+extern std::unique_ptr<ActionManager> pActionManager_;
+extern std::unique_ptr<ConfigManager> pConfigManager_;
 
 extern cv::VideoCapture cap_;
 

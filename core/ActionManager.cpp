@@ -55,7 +55,7 @@ time_t getCurrentTime( )
  * Description:  constructor
  *--------------------------------------------------------------------------------------
  */
-ActionManager::ActionManager ()
+ActionManager::ActionManager()
 {
     n_blinks_ = 0;
     blink_rate_ = 0.0;
