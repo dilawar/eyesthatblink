@@ -19,6 +19,7 @@
 #include "../core/ConfigManager.h"
 #include "../core/main_loop.h"
 #include "../external/plog/include/plog/Log.h"
+#include "../external/timercpp.h"
 
 #include <boost/filesystem.hpp>
 #include "etbapplication.h"
@@ -41,14 +42,13 @@ unique_ptr<ETBApplication> pApp_;
 extern unique_ptr<ConfigManager> pConfigManager_;
 
 
-bool fetch_and_process(int arg)
+bool fetch_and_process(int arg=0)
 {
     // If callback_started_ is still true that means previous call is not
     // complete yet. Don't do anything till previous call returns.
     static bool wait = false;
-    if (wait) {
+    if (wait) 
         return true;
-    }
 
     wait = true;
 
@@ -82,6 +82,9 @@ int unix_ui()
     // Add a callback function.
     sigc::slot<bool> slot = sigc::bind(sigc::ptr_fun(fetch_and_process), 0);
     Glib::signal_timeout().connect(slot, 100);
+
+    //Timer t = Timer();
+    //t.setInterval([&]() { return fetch_and_process(); }, 200);
 
     pApp_.reset(ETBApplication::create());
     pApp_->run(pApp_->getWindow());

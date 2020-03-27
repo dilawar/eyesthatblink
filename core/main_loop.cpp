@@ -178,8 +178,8 @@ bool process_frame()
     // Resize the frame. Resizing the frame to half speeds up the whole
     // process.
     cv::Mat face;
-    double rescaleFactor = 800.0 / frame_.cols;
-    // cv::resize(frame_, frame_, cv::Size(0, 0), rescaleFactor, rescaleFactor);
+    double rescaleFactor = 600.0 / frame_.cols;
+    cv::resize(frame_, frame_, cv::Size(0, 0), rescaleFactor, rescaleFactor);
 
 #if 1
     face = find_face(frame_);
