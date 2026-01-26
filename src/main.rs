@@ -9,6 +9,6 @@ fn main() {
         .with(EnvFilter::from_default_env())
         .init();
 
-    let mut camera = Camera::new();
+    let mut camera = Camera::new(0);
     camera.start();
 }

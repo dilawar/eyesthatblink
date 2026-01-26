@@ -7,14 +7,12 @@ pub(crate) struct Camera {
 }
 
 impl Camera {
-    pub fn new() -> Self {
-        let camera = videoio::VideoCapture::new(0, videoio::CAP_ANY)
+    pub fn new(camera_id: i32) -> Self {
+        let camera = videoio::VideoCapture::new(camera_id, videoio::CAP_ANY)
             .inspect_err(|e| tracing::error!("Failed to create VideoCapture: {e}"))
             .ok();
 
-        Self {
-            camera
-        }
+        Self { camera }
     }
 
     pub fn start(&mut self) {
@@ -24,7 +22,7 @@ impl Camera {
             return;
         }
 
-        let mut camera = self.camera.as_mut().expect("camera already exists");
+        let camera = self.camera.as_mut().expect("camera already exists");
         // if ! videoio::VideoCapture::is_opened(&mut camera).expect("failed to check if camera is opened") {
         //     tracing::error!("Camera could not be opened.");
         //     return;
