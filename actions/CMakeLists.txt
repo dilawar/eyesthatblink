@@ -1,6 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
-
-# xbacklight 
+# xbacklight
 find_package( PkgConfig REQUIRED )
 set(LIBRARIES_TO_LINK "" )
 
