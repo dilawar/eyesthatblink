@@ -1,33 +1,17 @@
-/***
- *       Filename:  ui_linux.cpp
- *
- *    Description:  UI in linux.
- *
- *        Version:  0.0.1
- *        Created:  2017-10-06
- *       Revision:  none
- *
- *         Author:  Dilawar Singh <dilawars@ncbs.res.in>
- *   Organization:  NCBS Bangalore
- *
- *        License:  GNU GPL2
- */
-
-
 #include "ui_unix.h"
 
-#include "../core/main_loop.h"
-#include "../core/ConfigManager.h"
 #include "../actions/linux.h"
+#include "../core/ConfigManager.h"
+#include "../core/main_loop.h"
 #include "../external/plog/include/plog/Log.h"
 
 #include "etbapplication.h"
 #include <boost/filesystem.hpp>
 
-#include <iostream>
-#include <ctime>
-#include <thread>
 #include <chrono>
+#include <ctime>
+#include <iostream>
+#include <thread>
 
 using namespace std;
 
@@ -39,35 +23,33 @@ extern double time_to_process_one_frame_;
 extern ConfigManager config_manager_;
 
 #ifdef WITH_GTK3
-Glib::RefPtr<ETBApplication> pApp_ ;
+Glib::RefPtr<ETBApplication> pApp_;
 #elif WITH_GTK2
-ETBApplication* pApp_;
+ETBApplication *pApp_;
 #endif
-
 
 static bool callback_started_ = false;
 
-bool callback( int arg  )
-{
-    // If callback_started_ is still true that means previous call is not
-    // complete yet. Don't do anything till previous call returns.
-    if( callback_started_ )
-    {
-        cout << '|';
-        cout.flush( );
-        return true;
-    }
-
-    callback_started_ = true;
-    auto t0 = std::chrono::system_clock::now( );
-    process_frame( );
-    auto t1 = std::chrono::system_clock::now( );
-    time_to_process_one_frame_ = diff_in_ms( t1, t0 );
-
-    std::this_thread::sleep_for(std::chrono::milliseconds( max(10, 100 - (int)time_to_process_one_frame_ ) ));
-    callback_started_ = false;
-
+bool callback(int arg) {
+  // If callback_started_ is still true that means previous call is not
+  // complete yet. Don't do anything till previous call returns.
+  if (callback_started_) {
+    cout << '|';
+    cout.flush();
     return true;
+  }
+
+  callback_started_ = true;
+  auto t0 = std::chrono::system_clock::now();
+  process_frame();
+  auto t1 = std::chrono::system_clock::now();
+  time_to_process_one_frame_ = diff_in_ms(t1, t0);
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(
+      max(10, 100 - (int)time_to_process_one_frame_)));
+  callback_started_ = false;
+
+  return true;
 }
 
 /* --------------------------------------------------------------------------*/
@@ -78,48 +60,43 @@ bool callback( int arg  )
  * @Param argc
  * @Param argv[]
  *
- * @Returns Infinite loop.  
+ * @Returns Infinite loop.
  */
 /* ----------------------------------------------------------------------------*/
-int unix_ui( int argc, char* argv[] )
-{
-    LOG_INFO << "Constructing applet" << endl;
+int unix_ui(int argc, char *argv[]) {
+  LOG_INFO << "Constructing applet" << endl;
 
-    string iconPath = config_manager_.getIconpath( );
-    LOG_INFO << "Using icon path " << iconPath;
+  string iconPath = config_manager_.getIconpath();
+  LOG_INFO << "Using icon path " << iconPath;
 
-    // Add a callback function.
-    sigc::slot<bool> loop_slot = sigc::bind( sigc::ptr_fun( callback ), 0 );
+  // Add a callback function.
+  sigc::slot<bool> loop_slot = sigc::bind(sigc::ptr_fun(callback), 0);
 
-    // Call every 100 ms and no earlier.
-    sigc::connection conn = Glib::signal_timeout().connect( loop_slot, 150 );
+  // Call every 100 ms and no earlier.
+  sigc::connection conn = Glib::signal_timeout().connect(loop_slot, 150);
 
 #ifdef WITH_GTK2
-    Gtk::Main initGui( argc, argv );
+  Gtk::Main initGui(argc, argv);
 #endif
-
 
 #ifdef WITH_GTK3
-    pApp_ = ETBApplication::create( );
-    Gtk::Main::run( *pApp_ );
+  pApp_ = ETBApplication::create();
+  Gtk::Main::run(*pApp_);
 #elif WITH_GTK2
-    pApp_ = new ETBApplication( );
-    Gtk::Main::run( *pApp_ );
+  pApp_ = new ETBApplication();
+  Gtk::Main::run(*pApp_);
 #endif
 
-    return 1;
-
+  return 1;
 }
 
 // Show user face in main window.
-bool show_user_face( const cv::Mat& gray )
-{
-    pApp_->show_user_face( gray );
-    return true;
+bool show_user_face(const cv::Mat &gray) {
+  pApp_->show_user_face(gray);
+  return true;
 }
 
-bool show_icon( )
-{
-    pApp_->show_icon( );
-    return true;
+bool show_icon() {
+  pApp_->show_icon();
+  return true;
 }
