@@ -1,3 +1,4 @@
+use crate::config::Config;
 use opencv::prelude::*;
 use opencv::videoio;
 
@@ -13,16 +14,16 @@ impl Camera {
         Self { camera, window }
     }
 
-    pub fn start(&mut self) {
-        if let Err(e) = self.start_inner() {
+    pub fn start(&mut self, config: &Config) {
+        if let Err(e) = self.start_inner(config) {
             tracing::error!("Camera error: {e}");
 
-            self.start();
+            self.start(config);
         }
     }
 
-    fn start_inner(&mut self) -> anyhow::Result<()> {
-        tracing::info!("Starting camera");
+    fn start_inner(&mut self, config: &Config) -> anyhow::Result<()> {
+        tracing::info!("Starting camera, config={:?}", config);
         loop {
             let mut frame = Mat::default();
             let result = self.camera.read(&mut frame)?;
