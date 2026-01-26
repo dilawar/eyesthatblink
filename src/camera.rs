@@ -16,7 +16,8 @@ impl Camera {
     pub fn start(&mut self) {
         if let Err(e) = self.start_inner() {
             tracing::error!("Camera error: {e}");
-            return self.start();
+
+            self.start();
         }
     }
 
@@ -46,6 +47,7 @@ impl Camera {
         opencv::highgui::imshow(self.window.as_ref().expect("window already exists"), frame)?;
         let key = opencv::highgui::wait_key(1)?;
         if key > 0 && key != 255 {
+            println!("Key pressed: {}", key);
             std::process::exit(0);
         }
 
