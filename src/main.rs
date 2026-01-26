@@ -9,6 +9,10 @@ fn main() {
         .with(EnvFilter::from_default_env())
         .init();
 
-    let mut camera = Camera::new(0);
+    let window = String::from("Eyes That Blink");
+    opencv::highgui::named_window(&window, opencv::highgui::WINDOW_AUTOSIZE)
+        .expect("Failed to create window");
+
+    let mut camera = Camera::new(0, Some(window));
     camera.start();
 }
