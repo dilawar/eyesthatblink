@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.20)
 cmake_policy(SET CMP0048 NEW)
 project( EyesThatBlink VERSION 1.0.0)
-add_definitions( --std=c++11 )
+add_definitions( --std=c++17 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 # Enable/disable debug.
@@ -25,7 +25,7 @@ find_package(OpenCV REQUIRED)
 if(OpenCV_FOUND)
     set(WITH_LOCAL_OPENCV OFF)
 else( )
-set( WITH_LOCAL_OPENCV ON )
+    set( WITH_LOCAL_OPENCV ON )
 endif( )
 
 include_directories( ${OpenCV_INCLUDE_DIRS} )
@@ -56,7 +56,7 @@ if( WITH_LOCAL_OPENCV )
 
     # Other libs.
     find_package( ZLIB )
-    # libdl 
+    # libdl
     list(APPEND OTHER_LIBS dl )
 endif( )
 
@@ -78,8 +78,7 @@ endif( )
 find_package( Threads )
 list(APPEND OTHER_LIBS ${CMAKE_THREAD_LIBS_INIT} )
 
-find_package( Boost REQUIRED COMPONENTS iostreams system filesystem date_time
-    regex)
+find_package( Boost REQUIRED COMPONENTS iostreams system filesystem date_time regex)
 include_directories( ${Boost_INCLUDE_DIRS} )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/external/boost-process/include )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/external/boost-asio/include )
@@ -116,8 +115,8 @@ set(CASCADE_INSTALL_DIR ${APP_DATA_DIR}/cascades )
 set(ICONFILE_INSTALL_PATH ${ICONFILE_INSTALL_DIR}/${ICON_FILENAME})
 
 # Write configuration.
-configure_file( 
-    ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in 
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
     ${CMAKE_CURRENT_SOURCE_DIR}/config.h
     )
 
@@ -128,7 +127,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/actions )
 
 
 # Add target and dependencies.
-add_executable( eyesthatblink 
+add_executable( eyesthatblink
     WIN32 MACOSX_BUNDLE main.cpp  ${ICON_FILE_48} )
 
 if(WITH_LOCAL_OPENCV)
@@ -159,20 +158,20 @@ endif( )
 
 ## Write configuration file.
 ## Write the binary
-#configure_file( 
-#    ${CMAKE_CURRENT_SOURCE_DIR}/eyesthatblink.in 
+#configure_file(
+#    ${CMAKE_CURRENT_SOURCE_DIR}/eyesthatblink.in
 #    ${CMAKE_BINARY_DIR}/eyesthatblink
 #    )
 
 
-add_custom_target( run 
-    DEPENDS eyesthatblink 
+add_custom_target( run
+    DEPENDS eyesthatblink
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/eyesthatblink
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     VERBATIM
     )
 
-# Install 
+# Install
 file(GLOB CASCADE_XML_FILES "${CASCADE_DIR}/*.xml")
 install( TARGETS eyesthatblink DESTINATION bin )
 install( PROGRAMS ${CMAKE_BINARY_DIR}/eyesthatblink DESTINATION bin )
