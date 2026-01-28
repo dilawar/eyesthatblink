@@ -3,6 +3,7 @@ use crossbeam_channel::bounded;
 use std::path::PathBuf;
 use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
+mod blink;
 mod camera;
 mod config;
 mod util;
@@ -68,10 +69,6 @@ fn main() {
         camera.start(&config, tx);
     });
 
-    // analyse frames.
-    loop {
-        if let Ok(frame) = rx.recv() {
-            util::show_frame(&frame).expect("Failed to show frame");
-        }
-    }
+    let mut blink_detector = blink::BlinkDetector::new(rx);
+    blink_detector.start();
 }
