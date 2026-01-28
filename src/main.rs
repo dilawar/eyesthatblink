@@ -1,9 +1,11 @@
 use clap::Parser;
+use crossbeam_channel::bounded;
 use std::path::PathBuf;
 use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
 mod camera;
 mod config;
+mod util;
 
 use camera::Camera;
 use config::Config;
@@ -59,10 +61,17 @@ fn main() {
     let config: Config = cli.into();
     tracing::debug!("config : {:?}", config);
 
-    let window = String::from("Eyes That Blink");
-    opencv::highgui::named_window(&window, opencv::highgui::WINDOW_AUTOSIZE)
-        .expect("Failed to create window");
+    let mut camera = Camera::new(0);
+    let (tx, rx) = bounded(10);
 
-    let mut camera = Camera::new(0, Some(window));
-    camera.start(&config);
+    std::thread::spawn(move || {
+        camera.start(&config, tx);
+    });
+
+    // analyse frames.
+    loop {
+        if let Ok(frame) = rx.recv() {
+            util::show_frame(&frame).expect("Failed to show frame");
+        }
+    }
 }
