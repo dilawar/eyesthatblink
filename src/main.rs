@@ -1,15 +1,12 @@
 use clap::Parser;
 use crossbeam_channel::bounded;
-use std::path::PathBuf;
 use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
 mod blink;
 mod camera;
-mod config;
 mod util;
 
 use camera::Camera;
-use config::Config;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -17,6 +14,9 @@ struct Cli {
     /// Turn debugging information on
     #[arg(short, long, action = clap::ArgAction::Count)]
     debug: u8,
+
+    #[arg(long, default_value_t = false)]
+    draw: bool,
 
     #[arg(short, long, default_value = "0.9")]
     score_threshold: f32,
@@ -28,16 +28,6 @@ struct Cli {
     tok_k: u32,
 }
 
-impl Into<Config> for Cli {
-    fn into(self) -> Config {
-        Config {
-            score_threshold: self.score_threshold,
-            nms_threshold: self.nms_threshold,
-            tok_k: self.tok_k,
-        }
-    }
-}
-
 fn main() {
     tracing_subscriber::registry()
         .with(fmt::layer())
@@ -47,16 +37,13 @@ fn main() {
     let cli = Cli::parse();
     tracing::debug!("CLI arguments: {:?}", cli);
 
-    let config: Config = cli.into();
-    tracing::debug!("config : {:?}", config);
-
     let mut camera = Camera::new(0);
     let (tx, rx) = bounded(10);
 
     std::thread::spawn(move || {
-        camera.start(&config, tx);
+        camera.start(tx);
     });
 
     let mut blink_detector = blink::BlinkDetector::new(rx);
-    blink_detector.start();
+    blink_detector.start(cli.draw);
 }

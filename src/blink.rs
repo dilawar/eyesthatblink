@@ -31,16 +31,18 @@ impl BlinkDetector {
         }
     }
 
-    pub fn start(&mut self) {
+    pub fn start(&mut self, draw_frames: bool) {
         // analyse frames.
         loop {
-            if let Ok(frame) = self.rx.recv() {
-                self.step(frame).expect("Failed to process frame");
+            if let Ok(frame) = self.rx.try_recv() {
+                self.step(frame, draw_frames)
+                    .expect("Failed to process frame");
+                std::thread::sleep(std::time::Duration::from_millis(100));
             }
         }
     }
 
-    fn step(&mut self, frame: Mat) -> anyhow::Result<()> {
+    fn step(&mut self, frame: Mat, draw_frames: bool) -> anyhow::Result<()> {
         let mut gray = Mat::default();
         imgproc::cvt_color(&frame, &mut gray, imgproc::COLOR_BGR2GRAY, 0)?;
 
@@ -48,12 +50,16 @@ impl BlinkDetector {
         self.face_detector.detect_multi_scale(
             &gray,
             &mut faces,
-            1.1,
-            3,
+            1.2,
+            4,
             0,
             Size::new(30, 30),
             Size::new(0, 0),
         )?;
+
+        if draw_frames {
+            draw_rects(&mut gray, &faces, 1.into(), 1);
+        }
 
         for face in faces {
             // Define ROI for eyes (upper half of face)
@@ -69,10 +75,30 @@ impl BlinkDetector {
                 Size::new(0, 0),
             )?;
 
-            // Logic to draw rectangles around eyes...
-            println!("eyes {eyes:?}");
+            let eyes_with_offset = eyes
+                .iter()
+                .map(|eye| Rect::new(eye.x + face.x, eye.y + face.y, eye.width, eye.height))
+                .collect::<Vector<Rect>>();
+
+            if draw_frames {
+                draw_rects(&mut gray, &eyes_with_offset, 1.into(), 1);
+            }
         }
-        crate::util::show_frame(&gray).expect("Failed to show frame");
+
+        if draw_frames {
+            crate::util::show_frame(&gray).expect("Failed to show frame");
+        }
+
         Ok(())
+    }
+}
+
+// Draw rectangles around detected eyes
+fn draw_rects(frame: &mut Mat, eyes: &Vector<Rect>, color: Scalar, thickness: i32) {
+    for eye in eyes {
+        let eye_rect = Rect::new(eye.x, eye.y, eye.width, eye.height);
+
+        imgproc::rectangle(frame, eye_rect, color, thickness, imgproc::LINE_8, 0)
+            .expect("failed to draw_ eye");
     }
 }
