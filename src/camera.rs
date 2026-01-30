@@ -4,7 +4,7 @@ use opencv::imgproc;
 use opencv::prelude::*;
 use opencv::videoio;
 
-pub(crate) struct Camera {
+pub struct Camera {
     camera: videoio::VideoCapture,
 }
 

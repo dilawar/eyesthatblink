@@ -3,11 +3,13 @@ use opencv::core::*;
 use opencv::imgproc;
 use opencv::objdetect;
 use opencv::prelude::*;
+use rbl_circular_buffer::CircularBuffer;
 
-pub(crate) struct BlinkDetector {
+pub struct BlinkDetector {
     rx: Receiver<Mat>,
     face_detector: objdetect::CascadeClassifier,
     eye_detector: objdetect::CascadeClassifier,
+    blink_timestamp: CircularBuffer<std::time::Instant>,
 }
 
 impl BlinkDetector {
@@ -28,6 +30,7 @@ impl BlinkDetector {
             rx,
             face_detector,
             eye_detector,
+            blink_timestamp: CircularBuffer::new(50),
         }
     }
 
@@ -103,8 +106,7 @@ impl BlinkDetector {
         for face in faces {
             // Define ROI for eyes (upper half of face)
             let eyes = self.detect_eyes(&mut gray, face, draw_frames)?;
-            let blinks = self.detect_blinks(&eyes)?;
-
+            let blinks = self.detect_blinks(&eyes, &gray)?;
             println!("Detected {} eyes, {:?} blinks", eyes.len(), blinks);
         }
 
@@ -115,7 +117,12 @@ impl BlinkDetector {
         Ok(())
     }
 
-    fn detect_blinks(&self, _eyes: &Vector<Rect>) -> anyhow::Result<()> {
+    fn detect_blinks(&mut self, eyes: &Vector<Rect>, _gray: &Mat) -> anyhow::Result<()> {
+        if eyes.len() < 2 {
+            // consider it a blink.
+            self.blink_timestamp.push(std::time::Instant::now());
+        }
+
         Ok(())
     }
 }
