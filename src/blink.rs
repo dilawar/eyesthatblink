@@ -44,11 +44,7 @@ impl BlinkDetector {
         }
     }
 
-    /// Implements most of blink detection logic here.
-    fn step(&mut self, frame: Mat, draw_frames: bool) -> anyhow::Result<()> {
-        let mut gray = Mat::default();
-        imgproc::cvt_color(&frame, &mut gray, imgproc::COLOR_BGR2GRAY, 0)?;
-
+    fn detect_faces(&mut self, gray: &Mat) -> anyhow::Result<Vector<Rect>> {
         let mut faces = Vector::<Rect>::new();
         self.face_detector.detect_multi_scale(
             &gray,
@@ -60,34 +56,56 @@ impl BlinkDetector {
             Size::new(0, 0),
         )?;
 
+        Ok(faces)
+    }
+
+    fn detect_eyes(
+        &mut self,
+        gray: &mut Mat,
+        face: Rect,
+        draw_frames: bool,
+    ) -> anyhow::Result<Vector<Rect>> {
+        let mut eyes = Vector::<Rect>::new();
+        let roi_gray = Mat::roi(gray, face)?;
+        self.eye_detector.detect_multi_scale(
+            &roi_gray,
+            &mut eyes,
+            1.1,
+            2,
+            0,
+            Size::new(20, 20),
+            Size::new(0, 0),
+        )?;
+
+        if draw_frames {
+            let eyes_with_offset = eyes
+                .iter()
+                .map(|eye| Rect::new(eye.x + face.x, eye.y + face.y, eye.width, eye.height))
+                .collect::<Vector<Rect>>();
+
+            draw_rects(gray, &eyes_with_offset, 1.into(), 1);
+        }
+
+        Ok(eyes)
+    }
+
+    /// Implements most of blink detection logic here.
+    fn step(&mut self, frame: Mat, draw_frames: bool) -> anyhow::Result<()> {
+        let mut gray = Mat::default();
+        imgproc::cvt_color(&frame, &mut gray, imgproc::COLOR_BGR2GRAY, 0)?;
+
+        let faces = self.detect_faces(&gray)?;
+
         if draw_frames {
             draw_rects(&mut gray, &faces, 1.into(), 1);
         }
 
         for face in faces {
             // Define ROI for eyes (upper half of face)
-            let roi_gray = Mat::roi(&gray, face)?;
-            let mut eyes = Vector::<Rect>::new();
-            self.eye_detector.detect_multi_scale(
-                &roi_gray,
-                &mut eyes,
-                1.1,
-                2,
-                0,
-                Size::new(20, 20),
-                Size::new(0, 0),
-            )?;
+            let eyes = self.detect_eyes(&mut gray, face, draw_frames)?;
+            let blinks = self.detect_blinks(&eyes)?;
 
-            self.detect_blinks(&eyes)?;
-
-            let eyes_with_offset = eyes
-                .iter()
-                .map(|eye| Rect::new(eye.x + face.x, eye.y + face.y, eye.width, eye.height))
-                .collect::<Vector<Rect>>();
-
-            if draw_frames {
-                draw_rects(&mut gray, &eyes_with_offset, 1.into(), 1);
-            }
+            println!("Detected {} eyes, {:?} blinks", eyes.len(), blinks);
         }
 
         if draw_frames {
@@ -97,7 +115,7 @@ impl BlinkDetector {
         Ok(())
     }
 
-    fn detect_blinks(&self, _eyes: &Vector<Rect_<i32>>) -> anyhow::Result<()> {
+    fn detect_blinks(&self, _eyes: &Vector<Rect>) -> anyhow::Result<()> {
         Ok(())
     }
 }
