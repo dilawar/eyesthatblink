@@ -1,5 +1,6 @@
 use crossbeam_channel::Sender;
-use opencv::core::Mat;
+use opencv::core::{Mat, Size};
+use opencv::imgproc;
 use opencv::prelude::*;
 use opencv::videoio;
 
@@ -25,6 +26,7 @@ impl Camera {
 
     // 5 to 10 frames per second is more than enough for blink detection.
     fn start_inner(&mut self, tx: &Sender<Mat>) -> anyhow::Result<()> {
+        const NUM_COLS: f64 = 480.0;
         loop {
             let mut frame = Mat::default();
             let result = self.camera.read(&mut frame)?;
@@ -34,7 +36,20 @@ impl Camera {
                 continue;
             }
 
-            tx.send(frame)
+            // resize the frame to 256 px width
+            let mut resized = Mat::default();
+            let frac = NUM_COLS / (frame.cols() as f64);
+
+            imgproc::resize(
+                &frame,
+                &mut resized,
+                Size::new(0, 0),
+                frac,
+                frac,
+                imgproc::INTER_LINEAR,
+            )?;
+
+            tx.send(resized)
                 .map_err(|e| anyhow::anyhow!("failed to send frame: {}", e))?;
 
             std::thread::sleep(std::time::Duration::from_millis(150));

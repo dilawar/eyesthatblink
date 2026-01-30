@@ -33,15 +33,18 @@ impl BlinkDetector {
 
     pub fn start(&mut self, draw_frames: bool) {
         // analyse frames.
+        // The consumer is not sending more than 5-10 frames a second.
         loop {
-            if let Ok(frame) = self.rx.try_recv() {
+            if let Ok(frame) = self.rx.recv() {
                 self.step(frame, draw_frames)
                     .expect("Failed to process frame");
-                std::thread::sleep(std::time::Duration::from_millis(100));
+
+                std::thread::sleep(std::time::Duration::from_millis(10));
             }
         }
     }
 
+    /// Implements most of blink detection logic here.
     fn step(&mut self, frame: Mat, draw_frames: bool) -> anyhow::Result<()> {
         let mut gray = Mat::default();
         imgproc::cvt_color(&frame, &mut gray, imgproc::COLOR_BGR2GRAY, 0)?;
@@ -75,6 +78,8 @@ impl BlinkDetector {
                 Size::new(0, 0),
             )?;
 
+            self.detect_blinks(&eyes)?;
+
             let eyes_with_offset = eyes
                 .iter()
                 .map(|eye| Rect::new(eye.x + face.x, eye.y + face.y, eye.width, eye.height))
@@ -89,6 +94,10 @@ impl BlinkDetector {
             crate::util::show_frame(&gray).expect("Failed to show frame");
         }
 
+        Ok(())
+    }
+
+    fn detect_blinks(&self, _eyes: &Vector<Rect_<i32>>) -> anyhow::Result<()> {
         Ok(())
     }
 }
