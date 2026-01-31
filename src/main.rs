@@ -32,12 +32,24 @@ fn main() {
     tracing::debug!("CLI arguments: {:?}", cli);
 
     let mut camera = eyesthatblink::Camera::new(0);
-    let (tx, rx) = bounded(10);
 
-    std::thread::spawn(move || {
-        camera.start(tx);
+    let (frame_tx, frame_rx) = bounded(10);
+    let (blink_tx, blink_rx) = bounded(10);
+
+    let _thread_frame = std::thread::spawn(move || {
+        camera.start(frame_tx);
     });
 
-    let mut blink_detector = eyesthatblink::blink_detector::BlinkDetector::new(rx);
-    blink_detector.start(cli.draw);
+    let _thread_blink = std::thread::spawn(move || {
+        let mut blink_detector = eyesthatblink::BlinkDetector::new(frame_rx, blink_tx);
+        blink_detector.start(cli.draw);
+    });
+
+    // main thread the process the blink.
+    loop {
+        for blink in blink_rx.iter() {
+            println!("Blink detected: {:?}", blink);
+        }
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
 }

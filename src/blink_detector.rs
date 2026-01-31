@@ -1,4 +1,4 @@
-use crossbeam_channel::Receiver;
+use crossbeam_channel::{Receiver, Sender};
 use opencv::core::*;
 use opencv::imgproc;
 use opencv::objdetect;
@@ -7,13 +7,14 @@ use rbl_circular_buffer::CircularBuffer;
 
 pub struct BlinkDetector {
     rx: Receiver<Mat>,
+    blink_tx: Sender<crate::BlinkEvent>,
     face_detector: objdetect::CascadeClassifier,
     eye_detector: objdetect::CascadeClassifier,
     blink_timestamp: CircularBuffer<std::time::Instant>,
 }
 
 impl BlinkDetector {
-    pub fn new(rx: Receiver<Mat>) -> Self {
+    pub fn new(rx: Receiver<Mat>, blink_tx: Sender<crate::BlinkEvent>) -> Self {
         let cascade_ff = include_str!("../cascades/haarcascade_frontalface_default.xml");
         let cascade_eye = include_str!("../cascades/haarcascade_eye.xml");
 
@@ -28,6 +29,7 @@ impl BlinkDetector {
 
         Self {
             rx,
+            blink_tx,
             face_detector,
             eye_detector,
             blink_timestamp: CircularBuffer::new(50),
@@ -106,8 +108,7 @@ impl BlinkDetector {
         for face in faces {
             // Define ROI for eyes (upper half of face)
             let eyes = self.detect_eyes(&mut gray, face, draw_frames)?;
-            let blinks = self.detect_blinks(&eyes, &gray)?;
-            println!("Detected {} eyes, {:?} blinks", eyes.len(), blinks);
+            self.detect_blinks(&eyes, &gray)?;
         }
 
         if draw_frames {
@@ -120,7 +121,11 @@ impl BlinkDetector {
     fn detect_blinks(&mut self, eyes: &Vector<Rect>, _gray: &Mat) -> anyhow::Result<()> {
         if eyes.len() < 2 {
             // consider it a blink.
-            self.blink_timestamp.push(std::time::Instant::now());
+            self.blink_tx
+                .send(crate::BlinkEvent {
+                    when: std::time::Instant::now(),
+                })
+                .expect("failed to send blink event");
         }
 
         Ok(())
