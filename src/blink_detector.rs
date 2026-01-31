@@ -3,14 +3,12 @@ use opencv::core::*;
 use opencv::imgproc;
 use opencv::objdetect;
 use opencv::prelude::*;
-use rbl_circular_buffer::CircularBuffer;
 
 pub struct BlinkDetector {
     rx: Receiver<Mat>,
     blink_tx: Sender<crate::BlinkEvent>,
     face_detector: objdetect::CascadeClassifier,
     eye_detector: objdetect::CascadeClassifier,
-    blink_timestamp: CircularBuffer<std::time::Instant>,
 }
 
 impl BlinkDetector {
@@ -32,7 +30,6 @@ impl BlinkDetector {
             blink_tx,
             face_detector,
             eye_detector,
-            blink_timestamp: CircularBuffer::new(50),
         }
     }
 

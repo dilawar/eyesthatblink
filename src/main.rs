@@ -31,25 +31,23 @@ fn main() {
     let cli = Cli::parse();
     tracing::debug!("CLI arguments: {:?}", cli);
 
-    let mut camera = eyesthatblink::Camera::new(0);
-
+    // create channels for cross-thread communication
     let (frame_tx, frame_rx) = bounded(10);
     let (blink_tx, blink_rx) = bounded(10);
 
+    // launch the camera, read frame and send them to the blink detector.
+    let mut camera = eyesthatblink::Camera::new(0);
     let _thread_frame = std::thread::spawn(move || {
         camera.start(frame_tx);
     });
 
+    // Launhch the blink detector, receive frame from camera and send blink event to manager.
     let _thread_blink = std::thread::spawn(move || {
         let mut blink_detector = eyesthatblink::BlinkDetector::new(frame_rx, blink_tx);
         blink_detector.start(cli.draw);
     });
 
-    // main thread the process the blink.
-    loop {
-        for blink in blink_rx.iter() {
-            println!("Blink detected: {:?}", blink);
-        }
-        std::thread::sleep(std::time::Duration::from_millis(100));
-    }
+    // Manage what to do when we receive a blink event e.g. notify, log, etc.
+    let mut manager = eyesthatblink::Manager::new(blink_rx);
+    manager.start();
 }
