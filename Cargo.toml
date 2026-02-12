@@ -12,3 +12,24 @@ notify-rust = "4.11.7"
 opencv = "0.98.1"
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
+
+[package.metadata.deb]
+maintainer = "Dilawar Singh <dilawar.s.rajput@gmail.com>"
+copyright = "2024, Dilawar Singh"
+license-file = ["LICENSE"]
+extended-description = """
+A daemon to detect eye-blinks using opencv and trigger external actions.
+It aims to replace mouse-clicks for disabled people, but can be used by anyone
+to blink and perform actions like: decrease/increase screen-brightness,
+run custom commands.
+"""
+depends = "$auto"
+section = "utils"
+priority = "optional"
+assets = [
+    ["target/release/eyesthatblink", "/usr/bin/", "755"],
+    ["cascades/*", "/usr/share/eyesthatblink/cascades/", "644"],
+    ["data/EyesThatBlink.desktop", "/usr/share/applications/", "644"],
+    ["data/EyesThatBlink.png", "/usr/share/icons/hicolor/scalable/apps/", "644"],
+]
+
