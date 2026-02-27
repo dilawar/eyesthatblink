@@ -20,6 +20,9 @@ struct Cli {
 
     #[arg(short, long, default_value = "5000")]
     tok_k: u32,
+
+    #[arg(long, value_enum, default_value_t = eyesthatblink::blink_detector::BlinkMethod::AdaptiveEar)]
+    blink_method: eyesthatblink::blink_detector::BlinkMethod,
 }
 
 fn main() {
@@ -43,7 +46,8 @@ fn main() {
 
     // Launhch the blink detector, receive frame from camera and send blink event to manager.
     let _thread_blink = std::thread::spawn(move || {
-        let mut blink_detector = eyesthatblink::BlinkDetector::new(frame_rx, blink_tx);
+        let mut blink_detector =
+            eyesthatblink::BlinkDetector::new(frame_rx, blink_tx, cli.blink_method);
         blink_detector.start(cli.draw);
     });
 
